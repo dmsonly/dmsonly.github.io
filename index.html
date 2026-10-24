@@ -372,120 +372,41 @@
     }
 
     .screen {
-      container-type: inline-size;
       position: relative;
-      display: flex;
-      flex-direction: column;
       aspect-ratio: 9 / 20;
       overflow: hidden;
       border-radius: 13.4% / 6%;
       background: #000;
     }
 
-    .status {
-      position: relative;
-      display: flex;
-      flex: none;
-      align-items: center;
-      justify-content: space-between;
-      height: 7.4cqw;
-      padding: 0 8cqw 0 9.5cqw;
-      color: #fff;
-      font-size: 3.6cqw;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
-
-    .status::after {
+    /* Punch-hole camera, centred on the screenshot's own status bar. */
+    .screen::before {
       content: "";
       position: absolute;
-      top: 50%;
+      top: 1.95%;
       left: 50%;
-      width: 3.6cqw;
-      height: 3.6cqw;
+      z-index: 1;
+      width: 3.6%;
+      aspect-ratio: 1;
       border-radius: 50%;
-      background: #0b0c0e;
-      box-shadow: inset 0 0 0 0.6cqw #17191d;
-      transform: translate(-50%, -40%);
+      background: radial-gradient(circle at 62% 38%, #1d3156, #050608 62%);
+      box-shadow: 0 0 0 1px #000;
+      transform: translateX(-50%);
     }
 
-    .status svg {
-      height: 3cqw;
-      width: auto;
-      fill: #fff;
+    .screen::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(118deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 36%);
+      pointer-events: none;
     }
 
     .screen img {
       display: block;
       width: 100%;
-      height: auto;
-      aspect-ratio: 720 / 1547;
-    }
-
-    .lock {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
-      align-items: center;
-      padding: 14cqw 5cqw 0;
-      background: radial-gradient(120% 70% at 30% 10%, #213a72, #0d1631 60%, #070b1a);
-      text-align: center;
-    }
-
-    .lock-time {
-      font-size: 22cqw;
-      font-weight: 300;
-      line-height: 1;
-      letter-spacing: -0.02em;
-    }
-
-    .lock-date {
-      margin-top: 2.5cqw;
-      color: rgba(234, 241, 255, 0.8);
-      font-size: 4.2cqw;
-    }
-
-    .lock-notifs {
-      display: grid;
-      gap: 2.2cqw;
-      width: 100%;
-      margin-top: 16cqw;
-    }
-
-    .notif {
-      display: grid;
-      grid-template-columns: 10cqw 1fr auto;
-      align-items: center;
-      gap: 3cqw;
-      padding: 3.4cqw 3.6cqw;
-      border-radius: 5cqw;
-      background: rgba(234, 241, 255, 0.12);
-      text-align: left;
-    }
-
-    .notif img {
-      width: 10cqw;
-      height: 10cqw;
-      border-radius: 3cqw;
-    }
-
-    .notif strong {
-      display: block;
-      font-size: 3.9cqw;
-    }
-
-    .notif span,
-    .notif time {
-      color: rgba(234, 241, 255, 0.72);
-      font-size: 3.5cqw;
-    }
-
-    .notif time {
-      align-self: start;
-    }
-
-    .notif-old {
-      opacity: 0.6;
+      height: 100%;
+      object-fit: cover;
     }
 
     /* Hero */
@@ -495,6 +416,7 @@
       align-items: center;
       min-height: calc(100svh - var(--header-h));
       padding: 2rem 0 5rem;
+      overflow-x: clip;
     }
 
     .hero .wrap {
@@ -551,10 +473,37 @@
       font-size: 0.9375rem;
     }
 
-    .hero-phone {
-      width: min(18.5rem, 74vw);
+    .hero-phones {
+      position: relative;
+      width: min(27rem, 90vw);
+      aspect-ratio: 2 / 3;
       margin: 0 auto;
-      transform: rotate(4deg);
+    }
+
+    .hero-phones::before {
+      content: "";
+      position: absolute;
+      inset: 18% 8% 10%;
+      border-radius: 50%;
+      background: radial-gradient(closest-side, rgba(11, 114, 231, 0.32), transparent);
+    }
+
+    .hero-phones .device {
+      position: absolute;
+      width: 64%;
+    }
+
+    .hero-phones .back {
+      top: 7%;
+      left: 0;
+      filter: brightness(0.55) saturate(0.9);
+      transform: rotate(-7deg);
+    }
+
+    .hero-phones .front {
+      top: 0;
+      right: 0;
+      transform: rotate(5deg);
     }
 
     .scroll-hint {
@@ -1236,12 +1185,6 @@
       <symbol id="sparkle" viewBox="0 0 24 24">
         <path d="M12 1c.9 5.8 4.2 9.1 11 11-6.8 1.9-10.1 5.2-11 11-.9-5.8-4.2-9.1-11-11 6.8-1.9 10.1-5.2 11-11z"/>
       </symbol>
-      <symbol id="status-icons" viewBox="0 0 62 14">
-        <path d="M7 13 .5 5.2C2.3 3.6 4.6 2.6 7 2.6s4.7 1 6.5 2.6z"/>
-        <path d="M18 13h3V9h-3zm5 0h3V6h-3zm5 0h3V3h-3zm5 0h3V0h-3z"/>
-        <rect x="41" y="1.5" width="17.5" height="11" rx="2.5"/>
-        <rect x="59.3" y="5" width="1.8" height="4" rx=".9"/>
-      </symbol>
       <symbol id="arrow-right" viewBox="0 0 16 16">
         <path d="M3 8h9.5M8.5 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
       </symbol>
@@ -1304,11 +1247,15 @@
             </div>
             <p class="note">Free. No extra account needed.</p>
           </div>
-          <div class="hero-phone">
-            <div class="device">
+          <div class="hero-phones">
+            <div class="device back" aria-hidden="true">
               <div class="screen">
-                <div class="status" aria-hidden="true"><span>9:41</span><svg><use href="#status-icons"/></svg></div>
-                <img src="screens/welcome.jpg" width="720" height="1547" fetchpriority="high" alt="DMs Only welcome screen: Instagram without the Feed, Reels or Explore.">
+                <img src="screens/block.jpg" width="720" height="1600" alt="">
+              </div>
+            </div>
+            <div class="device front">
+              <div class="screen">
+                <img src="screens/welcome.jpg" width="720" height="1600" fetchpriority="high" alt="DMs Only welcome screen: Instagram without the Feed, Reels or Explore.">
               </div>
             </div>
           </div>
@@ -1329,8 +1276,7 @@
             <div class="card-visual">
               <div class="device">
                 <div class="screen">
-                  <div class="status" aria-hidden="true"><span>9:41</span><svg><use href="#status-icons"/></svg></div>
-                  <img src="screens/no-feed.jpg" width="720" height="1547" loading="lazy" decoding="async" alt="Screen showing that the Feed, Reels and Explore are removed.">
+                  <img src="screens/no-feed.jpg" width="720" height="1600" loading="lazy" decoding="async" alt="Screen showing that the Feed, Reels and Explore are removed.">
                 </div>
               </div>
             </div>
@@ -1344,8 +1290,7 @@
             <div class="card-visual">
               <div class="device">
                 <div class="screen">
-                  <div class="status" aria-hidden="true"><span>9:41</span><svg><use href="#status-icons"/></svg></div>
-                  <img src="screens/messages-stay.jpg" width="720" height="1547" loading="lazy" decoding="async" alt="Screen showing that DMs, group chats, voice notes and Stories are kept.">
+                  <img src="screens/messages-stay.jpg" width="720" height="1600" loading="lazy" decoding="async" alt="Screen showing that DMs, group chats, voice notes and Stories are kept.">
                 </div>
               </div>
             </div>
@@ -1359,23 +1304,7 @@
             <div class="card-visual">
               <div class="device">
                 <div class="screen">
-                  <div class="status" aria-hidden="true"><span>9:41</span><svg><use href="#status-icons"/></svg></div>
-                  <div class="lock" role="img" aria-label="Lock screen with a DMs Only notification: 3 unread conversations.">
-                    <div class="lock-time">9:41</div>
-                    <div class="lock-date">Sunday, October 25</div>
-                    <div class="lock-notifs">
-                      <div class="notif">
-                        <img src="favicon.svg" alt="" width="40" height="40">
-                        <div><strong>DMs Only</strong><span>3 unread conversations</span></div>
-                        <time>now</time>
-                      </div>
-                      <div class="notif notif-old">
-                        <img src="favicon.svg" alt="" width="40" height="40">
-                        <div><strong>DMs Only</strong><span>1 unread conversation</span></div>
-                        <time>15m</time>
-                      </div>
-                    </div>
-                  </div>
+                  <img src="screens/settings.jpg" width="720" height="1600" loading="lazy" decoding="async" alt="DMs Only Settings with Block Instagram and Unread message alerts turned on.">
                 </div>
               </div>
             </div>
@@ -1389,8 +1318,7 @@
             <div class="card-visual">
               <div class="device">
                 <div class="screen">
-                  <div class="status" aria-hidden="true"><span>9:41</span><svg><use href="#status-icons"/></svg></div>
-                  <img src="screens/lock-app.jpg" width="720" height="1547" loading="lazy" decoding="async" alt="Screen explaining the optional Instagram lock with two 5 minute passes a day.">
+                  <img src="screens/block.jpg" width="720" height="1600" loading="lazy" decoding="async" alt="Block screen shown over the Instagram app: Instagram is blocked by DMs Only.">
                 </div>
               </div>
             </div>
@@ -1408,8 +1336,7 @@
           <div class="split-visual" data-reveal>
             <div class="device">
               <div class="screen">
-                <div class="status" aria-hidden="true"><span>9:41</span><svg><use href="#status-icons"/></svg></div>
-                <img src="screens/sign-in.jpg" width="720" height="1547" loading="lazy" decoding="async" alt="Sign in screen: you sign in on Instagram's own page and DMs Only never sees your password.">
+                <img src="screens/sign-in.jpg" width="720" height="1600" loading="lazy" decoding="async" alt="Sign in screen: you sign in on Instagram's own page and DMs Only never sees your password.">
               </div>
             </div>
           </div>
