@@ -13,14 +13,15 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preload" href="screens/welcome.jpg" as="image">
   <style>
     :root {
       color-scheme: dark;
       --bg: #0a152e;
       --text: #eaf1ff;
       --muted: #a9bad9;
-      --border: rgba(234, 241, 255, 0.14);
-      --panel: rgba(10, 21, 46, 0.62);
+      --border: rgba(234, 241, 255, 0.12);
+      --panel: rgba(10, 21, 46, 0.66);
       --accent: #0b72e7;
       --accent-hover: #0a84ff;
       --accent-soft: rgba(11, 114, 231, 0.18);
@@ -28,7 +29,8 @@
       --link: #9cc4ff;
       --sparkle-fill: #e4efff;
       --sparkle-stroke: #7fb0f2;
-      --header-h: 4rem;
+      --header-h: 4.5rem;
+      --ease-out: cubic-bezier(0.2, 0.65, 0.25, 1);
     }
 
     *,
@@ -37,8 +39,13 @@
       box-sizing: border-box;
     }
 
+    [hidden] {
+      display: none !important;
+    }
+
     html {
       background: var(--bg);
+      scroll-padding-top: var(--header-h);
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
     }
@@ -56,8 +63,10 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       font-size: 1.0625rem;
       line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
     }
 
+    /* Glow and the readability veil are baked into one static layer; only the cloud canvases change. */
     .bg {
       position: fixed;
       top: 0;
@@ -69,16 +78,12 @@
       pointer-events: none;
       z-index: 0;
       contain: strict;
-    }
-
-    .bg-glow {
-      position: absolute;
-      inset: -20%;
       background:
-        radial-gradient(ellipse 45% 35% at 70% 30%, #204281, transparent 70%),
-        radial-gradient(ellipse 40% 45% at 20% 75%, #19366e, transparent 70%),
-        radial-gradient(ellipse 35% 30% at 85% 85%, #173165, transparent 70%);
-      animation: glow-drift 24.5s ease-in-out infinite alternate;
+        linear-gradient(180deg, rgba(10, 21, 46, 0.55), rgba(10, 21, 46, 0.35) 50%, rgba(10, 21, 46, 0.65)),
+        radial-gradient(ellipse 63% 49% at 78% 22%, #204281, transparent 70%),
+        radial-gradient(ellipse 56% 63% at 8% 85%, #19366e, transparent 70%),
+        radial-gradient(ellipse 49% 42% at 99% 99%, #173165, transparent 70%),
+        var(--bg);
     }
 
     /* Clouds seen through a dot grid give the halftone look. */
@@ -97,7 +102,7 @@
         radial-gradient(ellipse 35% 40% at 18% 68%, #79a6e2, transparent 65%),
         radial-gradient(ellipse 30% 25% at 40% 10%, #4379c9, transparent 70%),
         radial-gradient(ellipse 30% 30% at 88% 80%, #5f95dd, transparent 70%);
-      opacity: 0.7;
+      opacity: 0.45;
       animation: dots-drift 17s ease-in-out infinite alternate;
     }
 
@@ -121,12 +126,6 @@
       opacity: 0.9;
     }
 
-    .bg-veil {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(10, 21, 46, 0.55), rgba(10, 21, 46, 0.35) 50%, rgba(10, 21, 46, 0.65));
-    }
-
     .sparkle {
       position: absolute;
       fill: var(--sparkle-fill);
@@ -140,16 +139,6 @@
       position: absolute;
       width: 0;
       height: 0;
-    }
-
-    @keyframes glow-drift {
-      from {
-        transform: translate(-4%, 3%) scale(1.05);
-      }
-
-      to {
-        transform: translate(4%, -3%) scale(1.15);
-      }
     }
 
     @keyframes dots-drift {
@@ -175,21 +164,13 @@
       }
     }
 
-    @media (prefers-reduced-motion: reduce) {
-      .bg-glow,
-      .bg-dots,
-      .sparkle {
-        animation: none;
-      }
-    }
-
     .page {
       position: relative;
       z-index: 1;
     }
 
     .wrap {
-      max-width: 72rem;
+      max-width: 74rem;
       margin: 0 auto;
       padding: 0 1.5rem;
     }
@@ -200,18 +181,30 @@
     }
 
     a:focus-visible,
-    summary:focus-visible {
+    button:focus-visible,
+    summary:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    .gallery:focus-visible {
       outline: 2px solid var(--accent-text);
       outline-offset: 3px;
-      border-radius: 6px;
     }
 
+    /* Header */
     .site-header {
       position: sticky;
       top: 0;
       z-index: 10;
+      height: var(--header-h);
+      border-bottom: 1px solid transparent;
+      transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .site-header[data-scrolled="true"] {
       background: rgba(10, 21, 46, 0.94);
-      border-bottom: 1px solid var(--border);
+      border-bottom-color: var(--border);
+      box-shadow: 0 10px 30px -20px rgba(0, 0, 0, 0.8);
     }
 
     .site-header .wrap {
@@ -219,7 +212,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      height: var(--header-h);
+      height: 100%;
     }
 
     .brand {
@@ -229,6 +222,7 @@
       color: var(--text);
       font-size: 1.125rem;
       font-weight: 700;
+      letter-spacing: -0.01em;
       text-decoration: none;
     }
 
@@ -239,7 +233,7 @@
 
     .nav {
       display: flex;
-      gap: 1.75rem;
+      gap: 2rem;
     }
 
     .nav a {
@@ -247,15 +241,45 @@
       font-size: 0.9375rem;
       font-weight: 500;
       text-decoration: none;
+      transition: color 0.2s ease;
     }
 
     .nav a:hover {
       color: var(--text);
     }
 
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      min-height: 2.25rem;
+      padding: 0 0.875rem;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.8125rem;
+      font-weight: 650;
+      text-decoration: none;
+      transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .nav-cta:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .nav-cta svg,
+    .arrow {
+      width: 0.9375rem;
+      height: 0.9375rem;
+      flex: none;
+    }
+
+    /* Buttons */
     .btn {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 0.5rem;
       min-height: 3rem;
       padding: 0.75rem 1.375rem;
@@ -263,14 +287,17 @@
       border-radius: 999px;
       background: var(--accent);
       color: #fff;
+      font: inherit;
       font-size: 1rem;
       font-weight: 600;
       text-decoration: none;
-      transition: background-color 0.2s ease;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.2s ease;
     }
 
     .btn:hover {
       background: var(--accent-hover);
+      transform: translateY(-1px);
     }
 
     .btn-ghost {
@@ -281,12 +308,6 @@
 
     .btn-ghost:hover {
       background: rgba(234, 241, 255, 0.06);
-    }
-
-    .btn-small {
-      min-height: 2.5rem;
-      padding: 0.5rem 1rem;
-      font-size: 0.9375rem;
     }
 
     .soon {
@@ -318,15 +339,170 @@
       font-size: 1.125rem;
     }
 
+    /* Phone mockup */
+    .device {
+      position: relative;
+      padding: 2.4%;
+      border: 1px solid #22252c;
+      border-radius: 15% / 6.9%;
+      background: linear-gradient(110deg, #2a2d34, #0b0c0f 7%, #060709 92%, #2c2f36);
+      box-shadow: 0 34px 60px -26px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(0, 0, 0, 0.55);
+    }
+
+    .device::before,
+    .device::after {
+      content: "";
+      position: absolute;
+      width: 1.1%;
+      background: #1c1e23;
+    }
+
+    .device::before {
+      top: 22%;
+      left: -1.2%;
+      height: 9%;
+      border-radius: 2px 0 0 2px;
+    }
+
+    .device::after {
+      top: 34%;
+      right: -1.2%;
+      height: 12%;
+      border-radius: 0 2px 2px 0;
+    }
+
+    .screen {
+      container-type: inline-size;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      aspect-ratio: 9 / 20;
+      overflow: hidden;
+      border-radius: 13.4% / 6%;
+      background: #000;
+    }
+
+    .status {
+      position: relative;
+      display: flex;
+      flex: none;
+      align-items: center;
+      justify-content: space-between;
+      height: 7.4cqw;
+      padding: 0 8cqw 0 9.5cqw;
+      color: #fff;
+      font-size: 3.6cqw;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .status::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 3.6cqw;
+      height: 3.6cqw;
+      border-radius: 50%;
+      background: #0b0c0e;
+      box-shadow: inset 0 0 0 0.6cqw #17191d;
+      transform: translate(-50%, -40%);
+    }
+
+    .status svg {
+      height: 3cqw;
+      width: auto;
+      fill: #fff;
+    }
+
+    .screen img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 720 / 1547;
+    }
+
+    .lock {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      align-items: center;
+      padding: 14cqw 5cqw 0;
+      background: radial-gradient(120% 70% at 30% 10%, #213a72, #0d1631 60%, #070b1a);
+      text-align: center;
+    }
+
+    .lock-time {
+      font-size: 22cqw;
+      font-weight: 300;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .lock-date {
+      margin-top: 2.5cqw;
+      color: rgba(234, 241, 255, 0.8);
+      font-size: 4.2cqw;
+    }
+
+    .lock-notifs {
+      display: grid;
+      gap: 2.2cqw;
+      width: 100%;
+      margin-top: 16cqw;
+    }
+
+    .notif {
+      display: grid;
+      grid-template-columns: 10cqw 1fr auto;
+      align-items: center;
+      gap: 3cqw;
+      padding: 3.4cqw 3.6cqw;
+      border-radius: 5cqw;
+      background: rgba(234, 241, 255, 0.12);
+      text-align: left;
+    }
+
+    .notif img {
+      width: 10cqw;
+      height: 10cqw;
+      border-radius: 3cqw;
+    }
+
+    .notif strong {
+      display: block;
+      font-size: 3.9cqw;
+    }
+
+    .notif span,
+    .notif time {
+      color: rgba(234, 241, 255, 0.72);
+      font-size: 3.5cqw;
+    }
+
+    .notif time {
+      align-self: start;
+    }
+
+    .notif-old {
+      opacity: 0.6;
+    }
+
+    /* Hero */
     .hero {
-      padding: 4.5rem 0 3rem;
+      position: relative;
+      display: flex;
+      align-items: center;
+      min-height: calc(100svh - var(--header-h));
+      padding: 2rem 0 5rem;
     }
 
     .hero .wrap {
       display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
+      grid-template-columns: 1.1fr 0.9fr;
       align-items: center;
       gap: 3rem;
+      width: 100%;
     }
 
     .eyebrow {
@@ -341,9 +517,9 @@
 
     .hero h1 {
       margin: 1rem 0 0.5rem;
-      font-size: clamp(2.75rem, 7vw, 4.5rem);
-      line-height: 1.05;
-      letter-spacing: -0.03em;
+      font-size: clamp(3rem, 7.5vw, 5rem);
+      line-height: 1.02;
+      letter-spacing: -0.04em;
     }
 
     .tagline {
@@ -352,6 +528,7 @@
       font-size: clamp(1.375rem, 3vw, 1.875rem);
       font-weight: 700;
       line-height: 1.25;
+      letter-spacing: -0.015em;
     }
 
     .lede {
@@ -374,37 +551,43 @@
       font-size: 0.9375rem;
     }
 
-    .phone {
-      width: min(18rem, 72vw);
+    .hero-phone {
+      width: min(18.5rem, 74vw);
       margin: 0 auto;
-      padding: 9px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 44px;
-      background: linear-gradient(160deg, #1b2a4a, #070e1f);
-      box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.65), 0 0 60px rgba(11, 114, 231, 0.18);
+      transform: rotate(4deg);
     }
 
-    .phone img {
-      display: block;
-      width: 100%;
-      height: auto;
-      aspect-ratio: 720 / 1547;
-      object-fit: cover;
-      border-radius: 35px;
+    .scroll-hint {
+      position: absolute;
+      bottom: 1.5rem;
+      left: 50%;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--muted);
+      font-size: 0.8125rem;
+      text-decoration: none;
+      transform: translateX(-50%);
+      transition: color 0.2s ease;
     }
 
-    .hero .phone {
-      transform: rotate(3deg);
+    .scroll-hint:hover {
+      color: var(--text);
     }
 
+    /* Sections */
     section {
       padding: 4.5rem 0;
-      scroll-margin-top: var(--header-h);
     }
 
     .section-head {
-      max-width: 42rem;
-      margin: 0 0 2.5rem;
+      max-width: 48rem;
+      margin: 0 0 2.75rem;
+    }
+
+    .section-head.center {
+      margin-inline: auto;
+      text-align: center;
     }
 
     .label {
@@ -412,15 +595,15 @@
       color: var(--accent-text);
       font-size: 0.75rem;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
     }
 
-    .section-head h2 {
+    h2 {
       margin: 0 0 0.75rem;
-      font-size: clamp(1.875rem, 4vw, 2.5rem);
-      line-height: 1.15;
-      letter-spacing: -0.02em;
+      font-size: clamp(1.875rem, 4vw, 2.75rem);
+      line-height: 1.12;
+      letter-spacing: -0.03em;
     }
 
     .section-head p {
@@ -428,87 +611,172 @@
       color: var(--muted);
     }
 
-    .features {
-      display: grid;
-      gap: 1.5rem;
-    }
-
-    .feature,
-    .step,
-    .faq details,
-    .contact-card {
-      border: 1px solid var(--border);
-      background: var(--panel);
-    }
-
-    .feature {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      align-items: center;
-      gap: 2rem;
-      padding: 2.5rem;
-      border-radius: 28px;
-    }
-
-    .feature:nth-child(even) .feature-visual {
-      order: -1;
-    }
-
-    .feature h3 {
-      margin: 0 0 0.5rem;
-      font-size: 1.625rem;
-      line-height: 1.25;
-    }
-
-    .feature p {
+    /* Feature gallery: swipeable row on small screens, four columns on wide ones */
+    .gallery {
+      display: flex;
+      gap: 1.25rem;
       margin: 0;
-      color: var(--muted);
+      padding: 0 1.5rem 1rem;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: 1.5rem;
+      scrollbar-width: none;
+      list-style: none;
     }
 
-    .feature .phone {
-      width: min(12.5rem, 60vw);
+    .gallery::-webkit-scrollbar {
+      display: none;
     }
 
-    .notif {
-      display: grid;
-      grid-template-columns: 2.5rem 1fr auto;
-      align-items: center;
-      gap: 0.875rem;
-      width: min(21rem, 100%);
-      margin: 0 auto;
-      padding: 0.875rem 1rem;
+    .card {
+      flex: 0 0 min(80vw, 20rem);
+      scroll-snap-align: start;
+    }
+
+    .card-visual {
+      position: relative;
+      height: 26rem;
+      overflow: hidden;
       border: 1px solid var(--border);
-      border-radius: 20px;
-      background: rgba(234, 241, 255, 0.08);
-      box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.6);
+      border-radius: 24px;
+      background: radial-gradient(120% 90% at 30% 0%, #23407a, #142852 50%, #0d1b3a);
     }
 
-    .notif + .notif {
-      margin-top: 0.75rem;
-      opacity: 0.6;
+    .card:nth-child(2) .card-visual {
+      background: radial-gradient(120% 90% at 80% 0%, #2c3080, #191d55 50%, #10133a);
     }
 
-    .notif img {
-      width: 2.5rem;
-      height: 2.5rem;
-      border-radius: 12px;
+    .card:nth-child(3) .card-visual {
+      background: radial-gradient(120% 90% at 25% 0%, #1b4c60, #123342 50%, #0b2230);
     }
 
-    .notif strong {
-      display: block;
-      font-size: 0.9375rem;
+    .card:nth-child(4) .card-visual {
+      background: radial-gradient(120% 90% at 75% 0%, #2d3856, #1a233b 55%, #111827);
     }
 
-    .notif span,
-    .notif time {
+    .card-visual::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.07;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    .card .device {
+      position: absolute;
+      top: 2.25rem;
+      left: 50%;
+      width: 78%;
+      max-width: 15.5rem;
+      transform: translateX(-50%);
+      transition: translate 0.4s var(--ease-out);
+    }
+
+    .card:hover .device {
+      translate: 0 -6px;
+    }
+
+    .card-copy {
+      padding: 1.5rem 0.25rem 0;
+    }
+
+    .card-copy h3 {
+      margin: 0.5rem 0 0;
+      font-size: 1.3125rem;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .card-copy p {
+      margin: 0.625rem 0 0;
       color: var(--muted);
-      font-size: 0.875rem;
+      font-size: 0.9375rem;
+      line-height: 1.65;
     }
 
-    .notif time {
-      align-self: start;
+    .card-copy .label {
+      margin: 0;
     }
 
+    @media (min-width: 1100px) {
+      .gallery {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        max-width: 74rem;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        overflow: visible;
+      }
+    }
+
+    /* Privacy band */
+    .split {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      align-items: center;
+      gap: 4rem;
+    }
+
+    .split-visual {
+      position: relative;
+      height: 32rem;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      background: radial-gradient(110% 80% at 50% 0%, #20407c, #12244a 55%, #0b1733);
+    }
+
+    .split-visual .device {
+      position: absolute;
+      top: 2.5rem;
+      left: 50%;
+      width: min(17rem, 72%);
+      transform: translateX(-50%);
+    }
+
+    .checks {
+      display: grid;
+      gap: 1rem;
+      margin: 1.75rem 0 2rem;
+      padding: 0;
+      list-style: none;
+    }
+
+    .checks li {
+      display: grid;
+      grid-template-columns: 1.75rem 1fr;
+      gap: 0.75rem;
+      color: var(--muted);
+    }
+
+    .checks svg {
+      width: 1.75rem;
+      height: 1.75rem;
+      padding: 0.3rem;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      fill: none;
+      stroke: var(--accent-text);
+      stroke-width: 2.4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .text-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .text-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Steps */
     .steps {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -516,6 +784,13 @@
       margin: 0;
       padding: 0;
       list-style: none;
+    }
+
+    .step,
+    .faq details,
+    .panel {
+      border: 1px solid var(--border);
+      background: var(--panel);
     }
 
     .step {
@@ -545,10 +820,12 @@
       color: var(--muted);
     }
 
+    /* FAQ */
     .faq {
       display: grid;
       gap: 0.75rem;
       max-width: 48rem;
+      margin: 0 auto;
     }
 
     .faq details {
@@ -561,6 +838,7 @@
       justify-content: space-between;
       gap: 1rem;
       padding: 1.125rem 1.25rem;
+      border-radius: 18px;
       font-weight: 600;
       list-style: none;
       cursor: pointer;
@@ -575,7 +853,7 @@
       color: var(--accent-text);
       font-size: 1.5rem;
       line-height: 1;
-      transition: transform 0.2s ease;
+      transition: transform 0.25s var(--ease-out);
     }
 
     .faq details[open] summary::after {
@@ -588,27 +866,192 @@
       color: var(--muted);
     }
 
-    .contact-card {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1.5rem;
-      padding: 2.5rem;
-      border-radius: 28px;
+    /* Contact */
+    .panel {
+      max-width: 40rem;
+      margin: 0 auto;
+      padding: 2.25rem;
+      border-radius: 24px;
     }
 
-    .contact-card h2 {
-      margin: 0 0 0.5rem;
+    .panel h2 {
       font-size: clamp(1.625rem, 3.5vw, 2.125rem);
-      line-height: 1.2;
     }
 
-    .contact-card p {
-      margin: 0;
+    .panel-intro {
+      margin: 0 0 1.75rem;
       color: var(--muted);
     }
 
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 650;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      min-height: 3rem;
+      padding: 0.75rem 0.875rem;
+      border: 1px solid rgba(234, 241, 255, 0.18);
+      border-radius: 12px;
+      background: rgba(5, 11, 26, 0.6);
+      color: var(--text);
+      font: inherit;
+      font-size: 1rem;
+    }
+
+    .field select {
+      cursor: pointer;
+    }
+
+    .field textarea {
+      min-height: 8rem;
+      resize: vertical;
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder {
+      color: #7f90b0;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--accent-text);
+    }
+
+    .panel .btn {
+      width: 100%;
+    }
+
+    .panel-foot {
+      margin: 1rem 0 0;
+      color: var(--muted);
+      font-size: 0.875rem;
+      text-align: center;
+    }
+
+    /* Email chooser */
+    .email-dialog {
+      width: min(26rem, calc(100% - 2rem));
+      padding: 1.75rem;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: #0d1a38;
+      color: var(--text);
+      box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.8);
+    }
+
+    .email-dialog[open] {
+      animation: dialog-in 0.25s var(--ease-out);
+    }
+
+    .email-dialog::backdrop {
+      background: rgba(3, 8, 20, 0.65);
+    }
+
+    .email-dialog h3 {
+      margin: 0 2rem 0.5rem 0;
+      font-size: 1.25rem;
+    }
+
+    .email-dialog > p {
+      margin: 0 0 1.25rem;
+      color: var(--muted);
+      font-size: 0.9375rem;
+    }
+
+    .dialog-close {
+      position: absolute;
+      top: 0.875rem;
+      right: 0.875rem;
+      width: 2.25rem;
+      height: 2.25rem;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--muted);
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .dialog-close:hover {
+      background: rgba(234, 241, 255, 0.08);
+      color: var(--text);
+    }
+
+    .address {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding: 0.5rem 0.5rem 0.5rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(5, 11, 26, 0.6);
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+
+    .copy-btn {
+      flex: none;
+      min-height: 2.25rem;
+      padding: 0 0.875rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .copy-btn:hover {
+      background: rgba(234, 241, 255, 0.06);
+    }
+
+    .dialog-actions {
+      display: grid;
+      gap: 0.625rem;
+    }
+
+    .dialog-actions .btn {
+      width: 100%;
+    }
+
+    .dialog-actions .copy-btn {
+      min-height: 2.75rem;
+    }
+
+    @keyframes dialog-in {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+      }
+    }
+
+    /* Download */
     .download {
       text-align: center;
     }
@@ -620,55 +1063,127 @@
       gap: 1.25rem;
     }
 
-    .download h2 {
+    .download h2,
+    .download p {
       margin: 0;
-      font-size: clamp(1.875rem, 4vw, 2.5rem);
-      line-height: 1.15;
     }
 
     .download p {
-      margin: 0;
       color: var(--muted);
     }
 
+    /* Footer */
     .site-footer {
-      padding: 2.5rem 0 3rem;
+      padding: 3.5rem 0 2rem;
       border-top: 1px solid var(--border);
+      background: rgba(5, 11, 26, 0.45);
       color: var(--muted);
       font-size: 0.9375rem;
     }
 
-    .site-footer .wrap {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1.25rem;
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr 1fr 1fr;
+      gap: 2rem;
     }
 
-    .footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.25rem;
+    .footer-brand p {
+      max-width: 18rem;
+      margin: 0.875rem 0 0;
     }
 
-    .footer-links a {
+    .footer-col h3 {
+      margin: 0 0 1rem;
+      color: var(--text);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .footer-col ul {
+      display: grid;
+      gap: 0.75rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .footer-col a {
       color: var(--muted);
+      text-decoration: none;
     }
 
-    .footer-links a:hover {
+    .footer-col a:hover {
       color: var(--text);
     }
 
-    .disclaimer {
-      flex-basis: 100%;
-      margin: 0;
+    .footer-bottom {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
       font-size: 0.8125rem;
     }
 
-    @media (max-width: 860px) {
-      .hero .wrap {
+    .footer-bottom p {
+      margin: 0;
+    }
+
+    /* Scroll reveal: content stays visible without JavaScript. */
+    [data-reveal] {
+      transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+      transition-delay: var(--reveal-delay, 0s);
+    }
+
+    [data-reveal="pending"] {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bg-dots,
+      .sparkle {
+        animation: none;
+      }
+
+      [data-reveal="pending"] {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .hero .wrap,
+      .split {
         grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: 0;
+        padding-top: 2.5rem;
+      }
+
+      .scroll-hint {
+        display: none;
+      }
+
+      .split {
+        gap: 2.5rem;
+      }
+
+      .split-visual {
+        order: 2;
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .footer-brand {
+        grid-column: 1 / -1;
       }
     }
 
@@ -677,21 +1192,13 @@
         display: none;
       }
 
-      .feature {
-        grid-template-columns: 1fr;
-        padding: 1.75rem;
-      }
-
-      .feature:nth-child(even) .feature-visual {
-        order: 0;
-      }
-
-      .steps {
+      .steps,
+      .row {
         grid-template-columns: 1fr;
       }
 
-      .contact-card {
-        padding: 1.75rem;
+      .row {
+        gap: 0;
       }
     }
 
@@ -704,12 +1211,21 @@
         padding: 0 1rem;
       }
 
-      .hero {
-        padding-top: 2.5rem;
+      .gallery {
+        padding-inline: 1rem;
+        scroll-padding-inline: 1rem;
       }
 
       section {
-        padding: 3.5rem 0;
+        padding: 3.75rem 0;
+      }
+
+      .panel {
+        padding: 1.5rem;
+      }
+
+      .split-visual {
+        height: 28rem;
       }
     }
   </style>
@@ -720,12 +1236,28 @@
       <symbol id="sparkle" viewBox="0 0 24 24">
         <path d="M12 1c.9 5.8 4.2 9.1 11 11-6.8 1.9-10.1 5.2-11 11-.9-5.8-4.2-9.1-11-11 6.8-1.9 10.1-5.2 11-11z"/>
       </symbol>
+      <symbol id="status-icons" viewBox="0 0 62 14">
+        <path d="M7 13 .5 5.2C2.3 3.6 4.6 2.6 7 2.6s4.7 1 6.5 2.6z"/>
+        <path d="M18 13h3V9h-3zm5 0h3V6h-3zm5 0h3V3h-3zm5 0h3V0h-3z"/>
+        <rect x="41" y="1.5" width="17.5" height="11" rx="2.5"/>
+        <rect x="59.3" y="5" width="1.8" height="4" rx=".9"/>
+      </symbol>
+      <symbol id="arrow-right" viewBox="0 0 16 16">
+        <path d="M3 8h9.5M8.5 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </symbol>
+      <symbol id="arrow-down" viewBox="0 0 16 16">
+        <path d="M8 3v9.5M4 8.5l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </symbol>
+      <symbol id="check" viewBox="0 0 24 24">
+        <path d="M5 12.5l4.5 4.5L19 7.5"/>
+      </symbol>
+      <symbol id="play" viewBox="0 0 24 24">
+        <path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.6-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/>
+      </symbol>
     </svg>
-    <div class="bg-glow"></div>
     <div class="bg-dots halftone"></div>
     <canvas class="bg-clouds"></canvas>
     <canvas class="bg-cloud-dots halftone"></canvas>
-    <div class="bg-veil"></div>
     <svg class="sparkle" viewBox="0 0 24 24" style="left:5%;top:14%;width:14px;height:14px;--delay:0s;--duration:6s"><use href="#sparkle"/></svg>
     <svg class="sparkle" viewBox="0 0 24 24" style="left:18%;top:6%;width:10px;height:10px;--delay:-1.2s;--duration:7s"><use href="#sparkle"/></svg>
     <svg class="sparkle" viewBox="0 0 24 24" style="left:48%;top:4%;width:9px;height:9px;--delay:-4.8s;--duration:8s"><use href="#sparkle"/></svg>
@@ -746,11 +1278,12 @@
         <a class="brand" href="#top"><img src="favicon.svg" alt="" width="32" height="32">DMs Only</a>
         <nav class="nav" aria-label="Main">
           <a href="#features">Features</a>
+          <a href="#privacy">Privacy</a>
           <a href="#how">How it works</a>
           <a href="#faq">FAQ</a>
           <a href="#contact">Contact</a>
         </nav>
-        <a class="btn btn-small" href="#download">Get the app</a>
+        <a class="nav-cta" href="#download">Get the app<svg aria-hidden="true"><use href="#arrow-right"/></svg></a>
       </div>
     </header>
 
@@ -764,113 +1297,153 @@
             <p class="lede">Keep your DMs, group chats, voice notes and friends' Stories. Skip the endless scroll.</p>
             <div class="actions">
               <div class="soon">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.6-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>
+                <svg aria-hidden="true"><use href="#play"/></svg>
                 <span><small>Coming soon to</small><strong>Google Play</strong></span>
               </div>
               <a class="btn btn-ghost" href="#how">See how it works</a>
             </div>
             <p class="note">Free. No extra account needed.</p>
           </div>
-          <div class="phone">
-            <img src="screens/welcome.jpg" width="720" height="1547" alt="DMs Only welcome screen: Instagram without the Feed, Reels or Explore.">
+          <div class="hero-phone">
+            <div class="device">
+              <div class="screen">
+                <div class="status" aria-hidden="true"><span>9:41</span><svg><use href="#status-icons"/></svg></div>
+                <img src="screens/welcome.jpg" width="720" height="1547" fetchpriority="high" alt="DMs Only welcome screen: Instagram without the Feed, Reels or Explore.">
+              </div>
+            </div>
           </div>
         </div>
+        <a class="scroll-hint" href="#features">See the features<svg class="arrow" aria-hidden="true"><use href="#arrow-down"/></svg></a>
       </section>
 
       <section id="features">
         <div class="wrap">
-          <div class="section-head">
+          <div class="section-head" data-reveal>
             <p class="label">Features</p>
             <h2>Your messages stay. The scroll goes.</h2>
             <p>DMs Only opens Instagram's own website with the distracting parts taken out, so you can talk to friends without getting pulled into a feed.</p>
           </div>
-
-          <div class="features">
-            <article class="feature">
-              <div>
-                <p class="label">No more scrolling</p>
-                <h3>No Feed. No Reels. No Explore.</h3>
-                <p>They're removed completely, so there's nothing pulling you into a scroll. Search and the new post button are hidden too.</p>
-              </div>
-              <div class="feature-visual">
-                <div class="phone"><img src="screens/no-feed.jpg" width="720" height="1547" loading="lazy" alt="Screen showing that the Feed, Reels and Explore are removed."></div>
-              </div>
-            </article>
-
-            <article class="feature">
-              <div>
-                <p class="label">Messages</p>
-                <h3>Your messages stay.</h3>
-                <p>DMs, group chats, voice notes and friends' Stories still work with your existing Instagram account. Send photos, videos and voice messages like you always do.</p>
-              </div>
-              <div class="feature-visual">
-                <div class="phone"><img src="screens/messages-stay.jpg" width="720" height="1547" loading="lazy" alt="Screen showing that DMs, group chats, voice notes and Stories are kept."></div>
-              </div>
-            </article>
-
-            <article class="feature">
-              <div>
-                <p class="label">Optional</p>
-                <h3>Lock the Instagram app.</h3>
-                <p>Block the real Instagram app when you're ready. You keep two 5 minute passes a day for things only the app can do, like posting a story or calling someone. Turn it off any time in Settings.</p>
-              </div>
-              <div class="feature-visual">
-                <div class="phone"><img src="screens/lock-app.jpg" width="720" height="1547" loading="lazy" alt="Screen explaining the optional Instagram lock with two 5 minute passes a day."></div>
-              </div>
-            </article>
-
-            <article class="feature">
-              <div>
-                <p class="label">Notifications</p>
-                <h3>Know when someone messages you.</h3>
-                <p>Turn on unread alerts and DMs Only checks about every 15 minutes how many of your conversations are unread, then lets you know.</p>
-              </div>
-              <div class="feature-visual" aria-hidden="true">
-                <div class="notif">
-                  <img src="favicon.svg" alt="" width="40" height="40">
-                  <div><strong>DMs Only</strong><span>3 unread conversations</span></div>
-                  <time>now</time>
-                </div>
-                <div class="notif">
-                  <img src="favicon.svg" alt="" width="40" height="40">
-                  <div><strong>DMs Only</strong><span>1 unread conversation</span></div>
-                  <time>15m</time>
+        </div>
+        <ul class="gallery" tabindex="0" aria-label="Features">
+          <li class="card" data-reveal>
+            <div class="card-visual">
+              <div class="device">
+                <div class="screen">
+                  <div class="status" aria-hidden="true"><span>9:41</span><svg><use href="#status-icons"/></svg></div>
+                  <img src="screens/no-feed.jpg" width="720" height="1547" loading="lazy" decoding="async" alt="Screen showing that the Feed, Reels and Explore are removed.">
                 </div>
               </div>
-            </article>
+            </div>
+            <div class="card-copy">
+              <p class="label">No scrolling</p>
+              <h3>No Feed, Reels or Explore</h3>
+              <p>They're removed completely, so nothing pulls you into a scroll. Search and the new post button are hidden too.</p>
+            </div>
+          </li>
+          <li class="card" data-reveal style="--reveal-delay:0.08s">
+            <div class="card-visual">
+              <div class="device">
+                <div class="screen">
+                  <div class="status" aria-hidden="true"><span>9:41</span><svg><use href="#status-icons"/></svg></div>
+                  <img src="screens/messages-stay.jpg" width="720" height="1547" loading="lazy" decoding="async" alt="Screen showing that DMs, group chats, voice notes and Stories are kept.">
+                </div>
+              </div>
+            </div>
+            <div class="card-copy">
+              <p class="label">Messages</p>
+              <h3>Your DMs stay</h3>
+              <p>DMs, group chats, voice notes and friends' Stories still work with your existing Instagram account.</p>
+            </div>
+          </li>
+          <li class="card" data-reveal style="--reveal-delay:0.16s">
+            <div class="card-visual">
+              <div class="device">
+                <div class="screen">
+                  <div class="status" aria-hidden="true"><span>9:41</span><svg><use href="#status-icons"/></svg></div>
+                  <div class="lock" role="img" aria-label="Lock screen with a DMs Only notification: 3 unread conversations.">
+                    <div class="lock-time">9:41</div>
+                    <div class="lock-date">Sunday, October 25</div>
+                    <div class="lock-notifs">
+                      <div class="notif">
+                        <img src="favicon.svg" alt="" width="40" height="40">
+                        <div><strong>DMs Only</strong><span>3 unread conversations</span></div>
+                        <time>now</time>
+                      </div>
+                      <div class="notif notif-old">
+                        <img src="favicon.svg" alt="" width="40" height="40">
+                        <div><strong>DMs Only</strong><span>1 unread conversation</span></div>
+                        <time>15m</time>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-copy">
+              <p class="label">Notifications</p>
+              <h3>Unread alerts</h3>
+              <p>Turn them on and DMs Only checks about every 15 minutes, then tells you how many conversations are unread.</p>
+            </div>
+          </li>
+          <li class="card" data-reveal style="--reveal-delay:0.24s">
+            <div class="card-visual">
+              <div class="device">
+                <div class="screen">
+                  <div class="status" aria-hidden="true"><span>9:41</span><svg><use href="#status-icons"/></svg></div>
+                  <img src="screens/lock-app.jpg" width="720" height="1547" loading="lazy" decoding="async" alt="Screen explaining the optional Instagram lock with two 5 minute passes a day.">
+                </div>
+              </div>
+            </div>
+            <div class="card-copy">
+              <p class="label">Optional</p>
+              <h3>Lock the Instagram app</h3>
+              <p>Block the real app when you're ready. You keep two 5 minute passes a day to post a story or call someone.</p>
+            </div>
+          </li>
+        </ul>
+      </section>
 
-            <article class="feature">
-              <div>
-                <p class="label">Privacy</p>
-                <h3>Your password stays with Instagram.</h3>
-                <p>You sign in on Instagram's own page. DMs Only has no servers of its own and no analytics, so your password and messages only ever go to Instagram. <a href="privacy/">Read the privacy policy</a>.</p>
+      <section id="privacy">
+        <div class="wrap split">
+          <div class="split-visual" data-reveal>
+            <div class="device">
+              <div class="screen">
+                <div class="status" aria-hidden="true"><span>9:41</span><svg><use href="#status-icons"/></svg></div>
+                <img src="screens/sign-in.jpg" width="720" height="1547" loading="lazy" decoding="async" alt="Sign in screen: you sign in on Instagram's own page and DMs Only never sees your password.">
               </div>
-              <div class="feature-visual">
-                <div class="phone"><img src="screens/sign-in.jpg" width="720" height="1547" loading="lazy" alt="Sign in screen: you sign in on Instagram's own page and DMs Only never sees your password."></div>
-              </div>
-            </article>
+            </div>
+          </div>
+          <div data-reveal style="--reveal-delay:0.1s">
+            <p class="label">Privacy</p>
+            <h2>Your password stays with Instagram.</h2>
+            <ul class="checks">
+              <li><svg aria-hidden="true"><use href="#check"/></svg><span>You sign in on Instagram's own page, inside the app.</span></li>
+              <li><svg aria-hidden="true"><use href="#check"/></svg><span>DMs Only has no servers of its own, so your password and messages only ever go to Instagram.</span></li>
+              <li><svg aria-hidden="true"><use href="#check"/></svg><span>No advertising or analytics SDKs, and nothing to buy.</span></li>
+            </ul>
+            <a class="text-link" href="privacy/">Read the privacy policy<svg class="arrow" aria-hidden="true"><use href="#arrow-right"/></svg></a>
           </div>
         </div>
       </section>
 
       <section id="how">
         <div class="wrap">
-          <div class="section-head">
+          <div class="section-head" data-reveal>
             <p class="label">How it works</p>
             <h2>Set up in a few minutes.</h2>
           </div>
           <ol class="steps">
-            <li class="step">
+            <li class="step" data-reveal>
               <div class="step-num">1</div>
               <h3>Install DMs Only</h3>
               <p>Get it free from Google Play once it launches.</p>
             </li>
-            <li class="step">
+            <li class="step" data-reveal style="--reveal-delay:0.08s">
               <div class="step-num">2</div>
               <h3>Take the short intro</h3>
               <p>Answer a few quick questions and see how much time the scroll really takes.</p>
             </li>
-            <li class="step">
+            <li class="step" data-reveal style="--reveal-delay:0.16s">
               <div class="step-num">3</div>
               <h3>Sign in with Instagram</h3>
               <p>Use your existing account on Instagram's own login page. Your inbox opens right away.</p>
@@ -881,11 +1454,11 @@
 
       <section id="faq">
         <div class="wrap">
-          <div class="section-head">
+          <div class="section-head center" data-reveal>
             <p class="label">FAQ</p>
             <h2>Questions, answered.</h2>
           </div>
-          <div class="faq">
+          <div class="faq" data-reveal>
             <details>
               <summary>Is DMs Only made by Instagram?</summary>
               <p>No. DMs Only is an independent app and isn't affiliated with Instagram or Meta.</p>
@@ -907,6 +1480,10 @@
               <p>Yes, if you turn on unread alerts in Settings. DMs Only checks about every 15 minutes and tells you how many conversations are unread.</p>
             </details>
             <details>
+              <summary>Is there an iPhone version?</summary>
+              <p>Not right now. DMs Only is an Android app.</p>
+            </details>
+            <details>
               <summary>How do I remove my data?</summary>
               <p>Go to Android Settings → Apps → DMs Only → Storage → Clear storage. This signs you out and resets the app. Your Instagram account and messages aren't affected. The <a href="privacy/">privacy policy</a> has the details.</p>
             </details>
@@ -916,24 +1493,42 @@
 
       <section id="contact">
         <div class="wrap">
-          <div class="contact-card">
-            <div>
-              <p class="label">Contact</p>
-              <h2>Questions, bugs or ideas?</h2>
-              <p>Send an email any time: reshu70173@gmail.com</p>
+          <form class="panel" id="contact-form" data-reveal>
+            <p class="label">Contact</p>
+            <h2>Questions, bugs or ideas?</h2>
+            <p class="panel-intro">Send a question, report a problem or suggest a feature. This opens your email with your message ready to send.</p>
+            <div class="row">
+              <div class="field">
+                <label for="cf-name">Name</label>
+                <input id="cf-name" name="name" autocomplete="name" placeholder="Your name">
+              </div>
+              <div class="field">
+                <label for="cf-topic">Topic</label>
+                <select id="cf-topic" name="topic">
+                  <option>General question</option>
+                  <option>Report a problem</option>
+                  <option>Feature request</option>
+                  <option>Something else</option>
+                </select>
+              </div>
             </div>
-            <a class="btn" id="email-btn" href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=reshu70173@gmail.com&amp;su=DMs%20Only" target="_blank" rel="noopener noreferrer">Send an email</a>
-          </div>
+            <div class="field">
+              <label for="cf-message">Message</label>
+              <textarea id="cf-message" name="message" required placeholder="How can we help?"></textarea>
+            </div>
+            <button class="btn" type="submit">Continue to email<svg class="arrow" aria-hidden="true"><use href="#arrow-right"/></svg></button>
+            <p class="panel-foot">Or email <a class="js-email" href="mailto:reshu70173@gmail.com?subject=DMs%20Only">reshu70173@gmail.com</a> directly.</p>
+          </form>
         </div>
       </section>
 
       <section id="download" class="download">
-        <div class="wrap">
+        <div class="wrap" data-reveal>
           <img src="favicon.svg" alt="" width="72" height="72">
           <h2>Get DMs Only</h2>
-          <p>DMs Only is free and works with your existing Instagram account.</p>
+          <p>Free on Android. Works with your existing Instagram account.</p>
           <div class="soon">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.6-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>
+            <svg aria-hidden="true"><use href="#play"/></svg>
             <span><small>Coming soon to</small><strong>Google Play</strong></span>
           </div>
         </div>
@@ -942,16 +1537,56 @@
 
     <footer class="site-footer">
       <div class="wrap">
-        <a class="brand" href="#top"><img src="favicon.svg" alt="" width="32" height="32">DMs Only</a>
-        <nav class="footer-links" aria-label="Footer">
-          <a href="privacy/">Privacy Policy</a>
-          <a href="#contact">Contact</a>
-          <span>© 2026 DMs Only</span>
-        </nav>
-        <p class="disclaimer">DMs Only is an independent app and is not affiliated with Instagram or Meta. Instagram is a trademark of Meta Platforms, Inc.</p>
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <a class="brand" href="#top"><img src="favicon.svg" alt="" width="32" height="32">DMs Only</a>
+            <p>Instagram DMs without the Feed, Reels or Explore.</p>
+          </div>
+          <div class="footer-col">
+            <h3>App</h3>
+            <ul>
+              <li><a href="#features">Features</a></li>
+              <li><a href="#how">How it works</a></li>
+              <li><a href="#faq">FAQ</a></li>
+              <li><a href="#download">Google Play (coming soon)</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h3>Legal</h3>
+            <ul>
+              <li><a href="privacy/">Privacy Policy</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h3>Contact</h3>
+            <ul>
+              <li><a href="#contact">Contact form</a></li>
+              <li><a class="js-email" href="mailto:reshu70173@gmail.com?subject=DMs%20Only">Email</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>© 2026 DMs Only</p>
+          <p>DMs Only is an independent app and is not affiliated with Instagram or Meta. Instagram is a trademark of Meta Platforms, Inc.</p>
+        </div>
       </div>
     </footer>
   </div>
+
+  <dialog class="email-dialog" id="email-dialog" aria-labelledby="email-title">
+    <button class="dialog-close" type="button" aria-label="Close">×</button>
+    <h3 id="email-title">Email DMs Only</h3>
+    <p id="email-intro">Pick how you'd like to email us.</p>
+    <div class="address">
+      <span>reshu70173@gmail.com</span>
+      <button class="copy-btn" id="copy-address" type="button">Copy</button>
+    </div>
+    <div class="dialog-actions">
+      <a class="btn" id="email-gmail" target="_blank" rel="noopener noreferrer" href="https://mail.google.com/">Open in Gmail<svg class="arrow" aria-hidden="true"><use href="#arrow-right"/></svg></a>
+      <a class="btn btn-ghost" id="email-app" href="mailto:reshu70173@gmail.com">Open email app</a>
+      <button class="copy-btn" id="copy-message" type="button" hidden>Copy message</button>
+    </div>
+  </dialog>
 
   <script>
     (() => {
@@ -1010,6 +1645,7 @@
       let cols = 0;
       let rows = 0;
       let image = null;
+      let shade = null;
 
       function resize() {
         const w = Math.max(1, bg.clientWidth);
@@ -1021,6 +1657,11 @@
         cols = soft.width = dots.width = nextCols;
         rows = soft.height = dots.height = nextRows;
         image = softCtx.createImageData(cols, rows);
+        // Matches the old veil (55% / 35% / 65% darker at top / middle / bottom) without its own layer.
+        shade = Float32Array.from({ length: rows }, (_, j) => {
+          const y = j / (rows - 1);
+          return 1 - (y < 0.5 ? 0.55 - 0.4 * y : 0.35 + 0.6 * (y - 0.5));
+        });
       }
 
       function draw(t) {
@@ -1028,6 +1669,7 @@
         let k = 0;
         for (let j = 0; j < rows; j++) {
           const y = j * UNIT;
+          const rowShade = shade[j];
           for (let i = 0; i < cols; i++) {
             const x = i * UNIT;
             const n =
@@ -1038,7 +1680,7 @@
             data[k++] = 22 + 64 * d;
             data[k++] = 50 + 81 * d;
             data[k++] = 108 + 95 * d;
-            data[k++] = 255 * d;
+            data[k++] = 255 * d * rowShade;
           }
         }
         softCtx.putImageData(image, 0, 0);
@@ -1094,12 +1736,110 @@
       });
     })();
 
-    // Phones open the mail app with the address filled in; desktops get Gmail's compose window.
-    if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
-      const email = document.getElementById("email-btn");
-      email.href = "mailto:reshu70173@gmail.com?subject=DMs%20Only";
-      email.removeAttribute("target");
-    }
+    (() => {
+      const header = document.querySelector(".site-header");
+      let queued = false;
+      const update = () => {
+        header.dataset.scrolled = String(scrollY > 8);
+        queued = false;
+      };
+      addEventListener("scroll", () => {
+        if (!queued) {
+          queued = true;
+          requestAnimationFrame(update);
+        }
+      }, { passive: true });
+      update();
+    })();
+
+    (() => {
+      const items = document.querySelectorAll("[data-reveal]");
+      if (!("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const observer = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          entry.target.dataset.reveal = "shown";
+          observer.unobserve(entry.target);
+        }
+      }, { rootMargin: "0px 0px -8% 0px" });
+      for (const item of items) {
+        const box = item.getBoundingClientRect();
+        if (box.top < innerHeight && box.bottom > 0) continue;
+        item.dataset.reveal = "pending";
+        observer.observe(item);
+      }
+    })();
+
+    (() => {
+      const TO = "reshu70173@gmail.com";
+      const isPhone = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+        (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform));
+      const dialog = document.getElementById("email-dialog");
+      const intro = document.getElementById("email-intro");
+      const gmail = document.getElementById("email-gmail");
+      const app = document.getElementById("email-app");
+      const copyAddress = document.getElementById("copy-address");
+      const copyMessage = document.getElementById("copy-message");
+      let message = "";
+
+      // Gmail on the web is awkward on phones; there the mail app is the clear choice.
+      gmail.hidden = isPhone;
+
+      function openChooser(subject, body = "") {
+        const su = encodeURIComponent(subject);
+        const text = encodeURIComponent(body);
+        app.href = `mailto:${TO}?subject=${su}&body=${text}`;
+        gmail.href = `https://mail.google.com/mail/?view=cm&fs=1&to=${TO}&su=${su}&body=${text}`;
+        message = body;
+        copyMessage.hidden = !body;
+        intro.textContent = body
+          ? "Your message is filled in. Pick where to send it from."
+          : "Pick how you'd like to email us.";
+        if (typeof dialog.showModal !== "function") {
+          location.href = app.href;
+          return;
+        }
+        dialog.showModal();
+        (isPhone ? app : gmail).focus();
+      }
+
+      function copy(button, value) {
+        const label = button.textContent;
+        navigator.clipboard?.writeText(value).then(() => {
+          button.textContent = "Copied";
+          setTimeout(() => (button.textContent = label), 1600);
+        }).catch(() => {});
+      }
+
+      copyAddress.addEventListener("click", () => copy(copyAddress, TO));
+      copyMessage.addEventListener("click", () => copy(copyMessage, message));
+      dialog.querySelector(".dialog-close").addEventListener("click", () => dialog.close());
+      for (const choice of [gmail, app]) {
+        choice.addEventListener("click", () => setTimeout(() => dialog.close(), 300));
+      }
+      dialog.addEventListener("click", (event) => {
+        const box = dialog.getBoundingClientRect();
+        const inside = event.clientX >= box.left && event.clientX <= box.right &&
+          event.clientY >= box.top && event.clientY <= box.bottom;
+        if (!inside) dialog.close();
+      });
+
+      for (const link of document.querySelectorAll(".js-email")) {
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          openChooser("DMs Only");
+        });
+      }
+
+      const form = document.getElementById("contact-form");
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const name = form.elements.name.value.trim();
+        const topic = form.elements.topic.value;
+        const text = form.elements.message.value.trim();
+        openChooser(`DMs Only: ${topic}`, name ? `${text}\n\nFrom: ${name}` : text);
+      });
+    })();
   </script>
 </body>
 </html>
