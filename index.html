@@ -1,0 +1,1085 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>DMs Only | Instagram without the scroll</title>
+  <meta name="description" content="DMs Only for Android: your Instagram DMs, group chats and friends' Stories without the Feed, Reels or Explore.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://reshusingh07.github.io/">
+  <meta property="og:title" content="DMs Only | Instagram without the scroll">
+  <meta property="og:description" content="Your Instagram DMs, group chats and friends' Stories without the Feed, Reels or Explore.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0a152e;
+      --text: #eaf1ff;
+      --muted: #a9bad9;
+      --border: rgba(234, 241, 255, 0.14);
+      --panel: rgba(10, 21, 46, 0.62);
+      --accent: #0b72e7;
+      --accent-hover: #0a84ff;
+      --accent-soft: rgba(11, 114, 231, 0.18);
+      --accent-text: #8fc0ff;
+      --link: #9cc4ff;
+      --sparkle-fill: #e4efff;
+      --sparkle-stroke: #7fb0f2;
+      --header-h: 4rem;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--bg);
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      html {
+        scroll-behavior: smooth;
+      }
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 1.0625rem;
+      line-height: 1.6;
+    }
+
+    .bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      height: 100lvh;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-glow {
+      position: absolute;
+      inset: -20%;
+      background:
+        radial-gradient(ellipse 45% 35% at 70% 30%, #204281, transparent 70%),
+        radial-gradient(ellipse 40% 45% at 20% 75%, #19366e, transparent 70%),
+        radial-gradient(ellipse 35% 30% at 85% 85%, #173165, transparent 70%);
+      animation: glow-drift 24.5s ease-in-out infinite alternate;
+    }
+
+    /* Clouds seen through a dot grid give the halftone look. */
+    .halftone {
+      -webkit-mask-image: radial-gradient(circle, #000 1px, transparent 1.6px);
+      mask-image: radial-gradient(circle, #000 1px, transparent 1.6px);
+      -webkit-mask-size: 4px 4px;
+      mask-size: 4px 4px;
+    }
+
+    .bg-dots {
+      position: absolute;
+      inset: -15%;
+      background:
+        radial-gradient(ellipse 40% 30% at 65% 35%, #558dda, transparent 70%),
+        radial-gradient(ellipse 35% 40% at 18% 68%, #79a6e2, transparent 65%),
+        radial-gradient(ellipse 30% 25% at 40% 10%, #4379c9, transparent 70%),
+        radial-gradient(ellipse 30% 30% at 88% 80%, #5f95dd, transparent 70%);
+      opacity: 0.7;
+      animation: dots-drift 17s ease-in-out infinite alternate;
+    }
+
+    .bg.is-live .bg-dots {
+      display: none;
+    }
+
+    .bg-clouds,
+    .bg-cloud-dots {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .bg-clouds {
+      opacity: 0.4;
+    }
+
+    .bg-cloud-dots {
+      opacity: 0.9;
+    }
+
+    .bg-veil {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(10, 21, 46, 0.55), rgba(10, 21, 46, 0.35) 50%, rgba(10, 21, 46, 0.65));
+    }
+
+    .sparkle {
+      position: absolute;
+      fill: var(--sparkle-fill);
+      stroke: var(--sparkle-stroke);
+      stroke-width: 1.2;
+      filter: drop-shadow(0 0 4px rgba(111, 164, 238, 0.6));
+      animation: twinkle var(--duration, 6s) ease-in-out var(--delay, 0s) infinite;
+    }
+
+    .bg-defs {
+      position: absolute;
+      width: 0;
+      height: 0;
+    }
+
+    @keyframes glow-drift {
+      from {
+        transform: translate(-4%, 3%) scale(1.05);
+      }
+
+      to {
+        transform: translate(4%, -3%) scale(1.15);
+      }
+    }
+
+    @keyframes dots-drift {
+      from {
+        transform: translate(3%, -2%) scale(1);
+      }
+
+      to {
+        transform: translate(-3%, 2%) scale(1.1);
+      }
+    }
+
+    @keyframes twinkle {
+      0%,
+      100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+      }
+
+      50% {
+        opacity: 0.95;
+        transform: scale(1.1);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bg-glow,
+      .bg-dots,
+      .sparkle {
+        animation: none;
+      }
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+    }
+
+    .wrap {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    a {
+      color: var(--link);
+      text-underline-offset: 0.15em;
+    }
+
+    a:focus-visible,
+    summary:focus-visible {
+      outline: 2px solid var(--accent-text);
+      outline-offset: 3px;
+      border-radius: 6px;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(10, 21, 46, 0.72);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .site-header .wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      height: var(--header-h);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.625rem;
+      color: var(--text);
+      font-size: 1.125rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .brand img {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .nav {
+      display: flex;
+      gap: 1.75rem;
+    }
+
+    .nav a {
+      color: var(--muted);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .nav a:hover {
+      color: var(--text);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-height: 3rem;
+      padding: 0.75rem 1.375rem;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-ghost {
+      border-color: var(--border);
+      background: transparent;
+      color: var(--text);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(234, 241, 255, 0.06);
+    }
+
+    .btn-small {
+      min-height: 2.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.9375rem;
+    }
+
+    .soon {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-height: 3.5rem;
+      padding: 0.5rem 1.375rem 0.5rem 1rem;
+      border: 1px dashed rgba(143, 192, 255, 0.55);
+      border-radius: 16px;
+      background: var(--accent-soft);
+      line-height: 1.2;
+    }
+
+    .soon svg {
+      width: 1.5rem;
+      height: 1.5rem;
+      fill: var(--accent-text);
+    }
+
+    .soon small {
+      display: block;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .soon strong {
+      font-size: 1.125rem;
+    }
+
+    .hero {
+      padding: 4.5rem 0 3rem;
+    }
+
+    .hero .wrap {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      align-items: center;
+      gap: 3rem;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 0.375rem 0.875rem;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-text);
+      font-size: 0.8125rem;
+      font-weight: 600;
+    }
+
+    .hero h1 {
+      margin: 1rem 0 0.5rem;
+      font-size: clamp(2.75rem, 7vw, 4.5rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .tagline {
+      margin: 0 0 1rem;
+      color: var(--accent-text);
+      font-size: clamp(1.375rem, 3vw, 1.875rem);
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .lede {
+      max-width: 34rem;
+      margin: 0 0 2rem;
+      color: var(--muted);
+      font-size: 1.125rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .note {
+      margin: 1rem 0 0;
+      color: var(--muted);
+      font-size: 0.9375rem;
+    }
+
+    .phone {
+      width: min(18rem, 72vw);
+      margin: 0 auto;
+      padding: 9px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 44px;
+      background: linear-gradient(160deg, #1b2a4a, #070e1f);
+      box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.65), 0 0 60px rgba(11, 114, 231, 0.18);
+    }
+
+    .phone img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 9 / 20;
+      object-fit: cover;
+      border-radius: 35px;
+    }
+
+    .hero .phone {
+      transform: rotate(3deg);
+    }
+
+    section {
+      padding: 4.5rem 0;
+      scroll-margin-top: var(--header-h);
+    }
+
+    .section-head {
+      max-width: 42rem;
+      margin: 0 0 2.5rem;
+    }
+
+    .label {
+      margin: 0 0 0.5rem;
+      color: var(--accent-text);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .section-head h2 {
+      margin: 0 0 0.75rem;
+      font-size: clamp(1.875rem, 4vw, 2.5rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .features {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .feature,
+    .step,
+    .faq details,
+    .contact-card {
+      border: 1px solid var(--border);
+      background: var(--panel);
+    }
+
+    .feature {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 2rem;
+      padding: 2.5rem;
+      border-radius: 28px;
+    }
+
+    .feature:nth-child(even) .feature-visual {
+      order: -1;
+    }
+
+    .feature h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1.625rem;
+      line-height: 1.25;
+    }
+
+    .feature p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .feature .phone {
+      width: min(12.5rem, 60vw);
+    }
+
+    .notif {
+      display: grid;
+      grid-template-columns: 2.5rem 1fr auto;
+      align-items: center;
+      gap: 0.875rem;
+      width: min(21rem, 100%);
+      margin: 0 auto;
+      padding: 0.875rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: rgba(234, 241, 255, 0.08);
+      box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.6);
+    }
+
+    .notif + .notif {
+      margin-top: 0.75rem;
+      opacity: 0.6;
+    }
+
+    .notif img {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 12px;
+    }
+
+    .notif strong {
+      display: block;
+      font-size: 0.9375rem;
+    }
+
+    .notif span,
+    .notif time {
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+
+    .notif time {
+      align-self: start;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .step {
+      padding: 1.75rem;
+      border-radius: 24px;
+    }
+
+    .step-num {
+      display: grid;
+      place-items: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      margin-bottom: 1rem;
+      border-radius: 12px;
+      background: var(--accent-soft);
+      color: var(--accent-text);
+      font-weight: 800;
+    }
+
+    .step h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1.1875rem;
+    }
+
+    .step p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .faq {
+      display: grid;
+      gap: 0.75rem;
+      max-width: 48rem;
+    }
+
+    .faq details {
+      border-radius: 18px;
+    }
+
+    .faq summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.125rem 1.25rem;
+      font-weight: 600;
+      list-style: none;
+      cursor: pointer;
+    }
+
+    .faq summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .faq summary::after {
+      content: "+";
+      color: var(--accent-text);
+      font-size: 1.5rem;
+      line-height: 1;
+      transition: transform 0.2s ease;
+    }
+
+    .faq details[open] summary::after {
+      transform: rotate(45deg);
+    }
+
+    .faq details p {
+      margin: 0;
+      padding: 0 1.25rem 1.25rem;
+      color: var(--muted);
+    }
+
+    .contact-card {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      padding: 2.5rem;
+      border-radius: 28px;
+    }
+
+    .contact-card h2 {
+      margin: 0 0 0.5rem;
+      font-size: clamp(1.625rem, 3.5vw, 2.125rem);
+      line-height: 1.2;
+    }
+
+    .contact-card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .download {
+      text-align: center;
+    }
+
+    .download .wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .download h2 {
+      margin: 0;
+      font-size: clamp(1.875rem, 4vw, 2.5rem);
+      line-height: 1.15;
+    }
+
+    .download p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .site-footer {
+      padding: 2.5rem 0 3rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.9375rem;
+    }
+
+    .site-footer .wrap {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.25rem;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+    }
+
+    .footer-links a {
+      color: var(--muted);
+    }
+
+    .footer-links a:hover {
+      color: var(--text);
+    }
+
+    .disclaimer {
+      flex-basis: 100%;
+      margin: 0;
+      font-size: 0.8125rem;
+    }
+
+    @media (max-width: 860px) {
+      .hero .wrap {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .nav {
+        display: none;
+      }
+
+      .feature {
+        grid-template-columns: 1fr;
+        padding: 1.75rem;
+      }
+
+      .feature:nth-child(even) .feature-visual {
+        order: 0;
+      }
+
+      .steps {
+        grid-template-columns: 1fr;
+      }
+
+      .contact-card {
+        padding: 1.75rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        font-size: 1rem;
+      }
+
+      .wrap {
+        padding: 0 1rem;
+      }
+
+      .hero {
+        padding-top: 2.5rem;
+      }
+
+      section {
+        padding: 3.5rem 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <svg class="bg-defs" focusable="false">
+      <symbol id="sparkle" viewBox="0 0 24 24">
+        <path d="M12 1c.9 5.8 4.2 9.1 11 11-6.8 1.9-10.1 5.2-11 11-.9-5.8-4.2-9.1-11-11 6.8-1.9 10.1-5.2 11-11z"/>
+      </symbol>
+    </svg>
+    <div class="bg-glow"></div>
+    <div class="bg-dots halftone"></div>
+    <canvas class="bg-clouds"></canvas>
+    <canvas class="bg-cloud-dots halftone"></canvas>
+    <div class="bg-veil"></div>
+    <svg class="sparkle" viewBox="0 0 24 24" style="left:5%;top:14%;width:14px;height:14px;--delay:0s;--duration:6s"><use href="#sparkle"/></svg>
+    <svg class="sparkle" viewBox="0 0 24 24" style="left:18%;top:6%;width:10px;height:10px;--delay:-1.2s;--duration:7s"><use href="#sparkle"/></svg>
+    <svg class="sparkle" viewBox="0 0 24 24" style="left:48%;top:4%;width:9px;height:9px;--delay:-4.8s;--duration:8s"><use href="#sparkle"/></svg>
+    <svg class="sparkle" viewBox="0 0 24 24" style="left:92%;top:9%;width:16px;height:16px;--delay:-2.4s;--duration:5s"><use href="#sparkle"/></svg>
+    <svg class="sparkle" viewBox="0 0 24 24" style="left:78%;top:22%;width:11px;height:11px;--delay:-0.6s;--duration:8s"><use href="#sparkle"/></svg>
+    <svg class="sparkle" viewBox="0 0 24 24" style="left:3%;top:46%;width:12px;height:12px;--delay:-3s;--duration:7s"><use href="#sparkle"/></svg>
+    <svg class="sparkle" viewBox="0 0 24 24" style="left:95%;top:44%;width:13px;height:13px;--delay:-1.8s;--duration:6s"><use href="#sparkle"/></svg>
+    <svg class="sparkle" viewBox="0 0 24 24" style="left:58%;top:56%;width:9px;height:9px;--delay:-1s;--duration:6s"><use href="#sparkle"/></svg>
+    <svg class="sparkle" viewBox="0 0 24 24" style="left:10%;top:78%;width:15px;height:15px;--delay:-4.2s;--duration:8s"><use href="#sparkle"/></svg>
+    <svg class="sparkle" viewBox="0 0 24 24" style="left:88%;top:72%;width:10px;height:10px;--delay:-2.8s;--duration:5s"><use href="#sparkle"/></svg>
+    <svg class="sparkle" viewBox="0 0 24 24" style="left:30%;top:92%;width:12px;height:12px;--delay:-5s;--duration:7s"><use href="#sparkle"/></svg>
+    <svg class="sparkle" viewBox="0 0 24 24" style="left:66%;top:90%;width:14px;height:14px;--delay:-3.6s;--duration:6s"><use href="#sparkle"/></svg>
+  </div>
+
+  <div class="page">
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="#top"><img src="favicon.svg" alt="" width="32" height="32">DMs Only</a>
+        <nav class="nav" aria-label="Main">
+          <a href="#features">Features</a>
+          <a href="#how">How it works</a>
+          <a href="#faq">FAQ</a>
+          <a href="#contact">Contact</a>
+        </nav>
+        <a class="btn btn-small" href="#download">Get the app</a>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="wrap">
+          <div>
+            <span class="eyebrow">Coming soon for Android</span>
+            <h1>DMs Only</h1>
+            <p class="tagline">Instagram without the Feed, Reels or Explore.</p>
+            <p class="lede">Keep your DMs, group chats, voice notes and friends' Stories. Skip the endless scroll.</p>
+            <div class="actions">
+              <div class="soon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.6-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>
+                <span><small>Coming soon to</small><strong>Google Play</strong></span>
+              </div>
+              <a class="btn btn-ghost" href="#how">See how it works</a>
+            </div>
+            <p class="note">Free. No extra account needed.</p>
+          </div>
+          <div class="phone">
+            <img src="screens/welcome.jpg" width="720" height="1600" alt="DMs Only welcome screen: Instagram without the Feed, Reels or Explore.">
+          </div>
+        </div>
+      </section>
+
+      <section id="features">
+        <div class="wrap">
+          <div class="section-head">
+            <p class="label">Features</p>
+            <h2>Your messages stay. The scroll goes.</h2>
+            <p>DMs Only opens Instagram's own website with the distracting parts taken out, so you can talk to friends without getting pulled into a feed.</p>
+          </div>
+
+          <div class="features">
+            <article class="feature">
+              <div>
+                <p class="label">No more scrolling</p>
+                <h3>No Feed. No Reels. No Explore.</h3>
+                <p>They're removed completely, so there's nothing pulling you into a scroll. Search and the new post button are hidden too.</p>
+              </div>
+              <div class="feature-visual">
+                <div class="phone"><img src="screens/no-feed.jpg" width="720" height="1600" loading="lazy" alt="Screen showing that the Feed, Reels and Explore are removed."></div>
+              </div>
+            </article>
+
+            <article class="feature">
+              <div>
+                <p class="label">Messages</p>
+                <h3>Your messages stay.</h3>
+                <p>DMs, group chats, voice notes and friends' Stories still work with your existing Instagram account. Send photos, videos and voice messages like you always do.</p>
+              </div>
+              <div class="feature-visual">
+                <div class="phone"><img src="screens/messages-stay.jpg" width="720" height="1600" loading="lazy" alt="Screen showing that DMs, group chats, voice notes and Stories are kept."></div>
+              </div>
+            </article>
+
+            <article class="feature">
+              <div>
+                <p class="label">Optional</p>
+                <h3>Lock the Instagram app.</h3>
+                <p>Block the real Instagram app when you're ready. You keep two 5 minute passes a day for things only the app can do, like posting a story or calling someone. Turn it off any time in Settings.</p>
+              </div>
+              <div class="feature-visual">
+                <div class="phone"><img src="screens/lock-app.jpg" width="720" height="1600" loading="lazy" alt="Screen explaining the optional Instagram lock with two 5 minute passes a day."></div>
+              </div>
+            </article>
+
+            <article class="feature">
+              <div>
+                <p class="label">Notifications</p>
+                <h3>Know when someone messages you.</h3>
+                <p>Turn on unread alerts and DMs Only checks about every 15 minutes how many of your conversations are unread, then lets you know.</p>
+              </div>
+              <div class="feature-visual" aria-hidden="true">
+                <div class="notif">
+                  <img src="favicon.svg" alt="" width="40" height="40">
+                  <div><strong>DMs Only</strong><span>3 unread conversations</span></div>
+                  <time>now</time>
+                </div>
+                <div class="notif">
+                  <img src="favicon.svg" alt="" width="40" height="40">
+                  <div><strong>DMs Only</strong><span>1 unread conversation</span></div>
+                  <time>15m</time>
+                </div>
+              </div>
+            </article>
+
+            <article class="feature">
+              <div>
+                <p class="label">Privacy</p>
+                <h3>Your password stays with Instagram.</h3>
+                <p>You sign in on Instagram's own page. DMs Only has no servers of its own and no analytics, so your password and messages only ever go to Instagram. <a href="https://reshusingh07.github.io/dmsonly-privacy/" target="_blank" rel="noopener noreferrer">Read the privacy policy</a>.</p>
+              </div>
+              <div class="feature-visual">
+                <div class="phone"><img src="screens/sign-in.jpg" width="720" height="1600" loading="lazy" alt="Sign in screen: you sign in on Instagram's own page and DMs Only never sees your password."></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="how">
+        <div class="wrap">
+          <div class="section-head">
+            <p class="label">How it works</p>
+            <h2>Set up in a few minutes.</h2>
+          </div>
+          <ol class="steps">
+            <li class="step">
+              <div class="step-num">1</div>
+              <h3>Install DMs Only</h3>
+              <p>Get it free from Google Play once it launches.</p>
+            </li>
+            <li class="step">
+              <div class="step-num">2</div>
+              <h3>Take the short intro</h3>
+              <p>Answer a few quick questions and see how much time the scroll really takes.</p>
+            </li>
+            <li class="step">
+              <div class="step-num">3</div>
+              <h3>Sign in with Instagram</h3>
+              <p>Use your existing account on Instagram's own login page. Your inbox opens right away.</p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section id="faq">
+        <div class="wrap">
+          <div class="section-head">
+            <p class="label">FAQ</p>
+            <h2>Questions, answered.</h2>
+          </div>
+          <div class="faq">
+            <details>
+              <summary>Is DMs Only made by Instagram?</summary>
+              <p>No. DMs Only is an independent app and isn't affiliated with Instagram or Meta.</p>
+            </details>
+            <details>
+              <summary>Can DMs Only see my password or messages?</summary>
+              <p>No. You sign in on Instagram's own page inside the app. DMs Only doesn't run its own servers, so your password, messages and login never go anywhere except Instagram.</p>
+            </details>
+            <details>
+              <summary>Is it free?</summary>
+              <p>Yes. There's no subscription and nothing to buy, and you don't need a new account.</p>
+            </details>
+            <details>
+              <summary>Can I still use the regular Instagram app?</summary>
+              <p>Yes. Locking the Instagram app is optional. If you turn it on, DMs Only uses Android's Accessibility service only to notice when Instagram opens, and you get two 5 minute passes a day to use it.</p>
+            </details>
+            <details>
+              <summary>Will I still get notified about new messages?</summary>
+              <p>Yes, if you turn on unread alerts in Settings. DMs Only checks about every 15 minutes and tells you how many conversations are unread.</p>
+            </details>
+            <details>
+              <summary>How do I remove my data?</summary>
+              <p>Go to Android Settings → Apps → DMs Only → Storage → Clear storage. This signs you out and resets the app. Your Instagram account and messages aren't affected. The <a href="https://reshusingh07.github.io/dmsonly-privacy/" target="_blank" rel="noopener noreferrer">privacy policy</a> has the details.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact">
+        <div class="wrap">
+          <div class="contact-card">
+            <div>
+              <p class="label">Contact</p>
+              <h2>Questions, bugs or ideas?</h2>
+              <p>Send an email any time: reshu70173@gmail.com</p>
+            </div>
+            <a class="btn" href="mailto:reshu70173@gmail.com" target="_blank" rel="noopener noreferrer">Send an email</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="download" class="download">
+        <div class="wrap">
+          <img src="favicon.svg" alt="" width="72" height="72">
+          <h2>Get DMs Only</h2>
+          <p>DMs Only is free and works with your existing Instagram account.</p>
+          <div class="soon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.6-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>
+            <span><small>Coming soon to</small><strong>Google Play</strong></span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <a class="brand" href="#top"><img src="favicon.svg" alt="" width="32" height="32">DMs Only</a>
+        <nav class="footer-links" aria-label="Footer">
+          <a href="https://reshusingh07.github.io/dmsonly-privacy/" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+          <a href="#contact">Contact</a>
+          <span>© 2026 DMs Only</span>
+        </nav>
+        <p class="disclaimer">DMs Only is an independent app and is not affiliated with Instagram or Meta. Instagram is a trademark of Meta Platforms, Inc.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (() => {
+      const bg = document.querySelector(".bg");
+      const soft = bg.querySelector(".bg-clouds");
+      const dots = bg.querySelector(".bg-cloud-dots");
+      const softCtx = soft.getContext("2d");
+      const dotsCtx = dots.getContext("2d");
+      if (!softCtx || !dotsCtx) return;
+
+      const perm = new Uint8Array(512);
+      const p = Array.from({ length: 256 }, (_, i) => i);
+      let seed = 7;
+      for (let i = 255; i > 0; i--) {
+        seed = (seed * 16807) % 2147483647;
+        const j = seed % (i + 1);
+        [p[i], p[j]] = [p[j], p[i]];
+      }
+      for (let i = 0; i < 512; i++) perm[i] = p[i & 255];
+
+      const fade = (t) => t * t * t * (t * (t * 6 - 15) + 10);
+      const grad = (h, x, y) => (h & 1 ? -x : x) + (h & 2 ? -y : y);
+
+      function noise(x, y) {
+        const xi = Math.floor(x);
+        const yi = Math.floor(y);
+        const xf = x - xi;
+        const yf = y - yi;
+        const X = xi & 255;
+        const Y = yi & 255;
+        const u = fade(xf);
+        const aa = grad(perm[perm[X] + Y], xf, yf);
+        const ba = grad(perm[perm[X + 1] + Y], xf - 1, yf);
+        const ab = grad(perm[perm[X] + Y + 1], xf, yf - 1);
+        const bb = grad(perm[perm[X + 1] + Y + 1], xf - 1, yf - 1);
+        const top = aa + u * (ba - aa);
+        const bottom = ab + u * (bb - ab);
+        return top + fade(yf) * (bottom - top);
+      }
+
+      function fbm(x, y) {
+        let sum = 0;
+        let amp = 0.5;
+        for (let o = 0; o < 4; o++) {
+          sum += amp * noise(x, y);
+          x *= 2;
+          y *= 2;
+          amp *= 0.5;
+        }
+        return sum;
+      }
+
+      // The field is drawn at ~80 cells on the long side and upscaled by CSS, which keeps it cheap and soft.
+      const CELLS = 80;
+      const UNIT = 3 / CELLS;
+      let cols = 0;
+      let rows = 0;
+      let image = null;
+
+      function resize() {
+        const w = Math.max(1, bg.clientWidth);
+        const h = Math.max(1, bg.clientHeight);
+        const scale = CELLS / Math.max(w, h);
+        const nextCols = Math.max(2, Math.round(w * scale));
+        const nextRows = Math.max(2, Math.round(h * scale));
+        if (nextCols === cols && nextRows === rows) return;
+        cols = soft.width = dots.width = nextCols;
+        rows = soft.height = dots.height = nextRows;
+        image = softCtx.createImageData(cols, rows);
+      }
+
+      function draw(t) {
+        const data = image.data;
+        let k = 0;
+        for (let j = 0; j < rows; j++) {
+          const y = j * UNIT;
+          for (let i = 0; i < cols; i++) {
+            const x = i * UNIT;
+            const n =
+              0.65 * fbm(x + t * 0.0424, y + t * 0.0127) +
+              0.35 * fbm(x * 1.7 - t * 0.0265 + 31.4, y * 1.7 + t * 0.0191 + 17.2);
+            let d = (n + 0.05) / 0.45;
+            d = d <= 0 ? 0 : d >= 1 ? 1 : d * d * (3 - 2 * d);
+            data[k++] = 22 + 64 * d;
+            data[k++] = 50 + 81 * d;
+            data[k++] = 108 + 95 * d;
+            data[k++] = 255 * d;
+          }
+        }
+        softCtx.putImageData(image, 0, 0);
+        dotsCtx.clearRect(0, 0, cols, rows);
+        dotsCtx.drawImage(soft, 0, 0);
+      }
+
+      const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
+      let running = false;
+      let last = 0;
+
+      function tick(now) {
+        if (reduceMotion.matches) {
+          running = false;
+          return;
+        }
+        if (now - last >= 40) {
+          last = now;
+          draw(now / 1000);
+        }
+        requestAnimationFrame(tick);
+      }
+
+      function start() {
+        if (running || reduceMotion.matches) return;
+        running = true;
+        requestAnimationFrame(tick);
+      }
+
+      resize();
+      draw(performance.now() / 1000);
+      bg.classList.add("is-live");
+      start();
+
+      reduceMotion.addEventListener("change", start);
+      addEventListener("resize", () => {
+        resize();
+        draw(performance.now() / 1000);
+      });
+    })();
+  </script>
+</body>
+</html>
