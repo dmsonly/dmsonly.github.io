@@ -68,6 +68,7 @@
       overflow: hidden;
       pointer-events: none;
       z-index: 0;
+      contain: strict;
     }
 
     .bg-glow {
@@ -209,9 +210,7 @@
       position: sticky;
       top: 0;
       z-index: 10;
-      background: rgba(10, 21, 46, 0.72);
-      -webkit-backdrop-filter: blur(12px);
-      backdrop-filter: blur(12px);
+      background: rgba(10, 21, 46, 0.94);
       border-bottom: 1px solid var(--border);
     }
 
@@ -389,7 +388,7 @@
       display: block;
       width: 100%;
       height: auto;
-      aspect-ratio: 9 / 20;
+      aspect-ratio: 720 / 1547;
       object-fit: cover;
       border-radius: 35px;
     }
@@ -773,7 +772,7 @@
             <p class="note">Free. No extra account needed.</p>
           </div>
           <div class="phone">
-            <img src="screens/welcome.jpg" width="720" height="1600" alt="DMs Only welcome screen: Instagram without the Feed, Reels or Explore.">
+            <img src="screens/welcome.jpg" width="720" height="1547" alt="DMs Only welcome screen: Instagram without the Feed, Reels or Explore.">
           </div>
         </div>
       </section>
@@ -794,7 +793,7 @@
                 <p>They're removed completely, so there's nothing pulling you into a scroll. Search and the new post button are hidden too.</p>
               </div>
               <div class="feature-visual">
-                <div class="phone"><img src="screens/no-feed.jpg" width="720" height="1600" loading="lazy" alt="Screen showing that the Feed, Reels and Explore are removed."></div>
+                <div class="phone"><img src="screens/no-feed.jpg" width="720" height="1547" loading="lazy" alt="Screen showing that the Feed, Reels and Explore are removed."></div>
               </div>
             </article>
 
@@ -805,7 +804,7 @@
                 <p>DMs, group chats, voice notes and friends' Stories still work with your existing Instagram account. Send photos, videos and voice messages like you always do.</p>
               </div>
               <div class="feature-visual">
-                <div class="phone"><img src="screens/messages-stay.jpg" width="720" height="1600" loading="lazy" alt="Screen showing that DMs, group chats, voice notes and Stories are kept."></div>
+                <div class="phone"><img src="screens/messages-stay.jpg" width="720" height="1547" loading="lazy" alt="Screen showing that DMs, group chats, voice notes and Stories are kept."></div>
               </div>
             </article>
 
@@ -816,7 +815,7 @@
                 <p>Block the real Instagram app when you're ready. You keep two 5 minute passes a day for things only the app can do, like posting a story or calling someone. Turn it off any time in Settings.</p>
               </div>
               <div class="feature-visual">
-                <div class="phone"><img src="screens/lock-app.jpg" width="720" height="1600" loading="lazy" alt="Screen explaining the optional Instagram lock with two 5 minute passes a day."></div>
+                <div class="phone"><img src="screens/lock-app.jpg" width="720" height="1547" loading="lazy" alt="Screen explaining the optional Instagram lock with two 5 minute passes a day."></div>
               </div>
             </article>
 
@@ -844,10 +843,10 @@
               <div>
                 <p class="label">Privacy</p>
                 <h3>Your password stays with Instagram.</h3>
-                <p>You sign in on Instagram's own page. DMs Only has no servers of its own and no analytics, so your password and messages only ever go to Instagram. <a href="privacy/" target="_blank" rel="noopener noreferrer">Read the privacy policy</a>.</p>
+                <p>You sign in on Instagram's own page. DMs Only has no servers of its own and no analytics, so your password and messages only ever go to Instagram. <a href="privacy/">Read the privacy policy</a>.</p>
               </div>
               <div class="feature-visual">
-                <div class="phone"><img src="screens/sign-in.jpg" width="720" height="1600" loading="lazy" alt="Sign in screen: you sign in on Instagram's own page and DMs Only never sees your password."></div>
+                <div class="phone"><img src="screens/sign-in.jpg" width="720" height="1547" loading="lazy" alt="Sign in screen: you sign in on Instagram's own page and DMs Only never sees your password."></div>
               </div>
             </article>
           </div>
@@ -909,7 +908,7 @@
             </details>
             <details>
               <summary>How do I remove my data?</summary>
-              <p>Go to Android Settings → Apps → DMs Only → Storage → Clear storage. This signs you out and resets the app. Your Instagram account and messages aren't affected. The <a href="privacy/" target="_blank" rel="noopener noreferrer">privacy policy</a> has the details.</p>
+              <p>Go to Android Settings → Apps → DMs Only → Storage → Clear storage. This signs you out and resets the app. Your Instagram account and messages aren't affected. The <a href="privacy/">privacy policy</a> has the details.</p>
             </details>
           </div>
         </div>
@@ -923,7 +922,7 @@
               <h2>Questions, bugs or ideas?</h2>
               <p>Send an email any time: reshu70173@gmail.com</p>
             </div>
-            <a class="btn" href="mailto:reshu70173@gmail.com" target="_blank" rel="noopener noreferrer">Send an email</a>
+            <a class="btn" id="email-btn" href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=reshu70173@gmail.com&amp;su=DMs%20Only" target="_blank" rel="noopener noreferrer">Send an email</a>
           </div>
         </div>
       </section>
@@ -945,7 +944,7 @@
       <div class="wrap">
         <a class="brand" href="#top"><img src="favicon.svg" alt="" width="32" height="32">DMs Only</a>
         <nav class="footer-links" aria-label="Footer">
-          <a href="privacy/" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+          <a href="privacy/">Privacy Policy</a>
           <a href="#contact">Contact</a>
           <span>© 2026 DMs Only</span>
         </nav>
@@ -1050,15 +1049,28 @@
       const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
       let running = false;
       let last = 0;
+      let prev = 0;
+      let clock = 0;
+      let lastScroll = -Infinity;
+
+      // Clouds hold still while the page scrolls, so scrolling gets the whole frame budget.
+      addEventListener("scroll", () => {
+        lastScroll = performance.now();
+      }, { passive: true });
 
       function tick(now) {
         if (reduceMotion.matches) {
           running = false;
           return;
         }
-        if (now - last >= 40) {
-          last = now;
-          draw(now / 1000);
+        const dt = prev ? Math.min(now - prev, 100) : 0;
+        prev = now;
+        if (now - lastScroll > 200) {
+          clock += dt / 1000;
+          if (now - last >= 50) {
+            last = now;
+            draw(clock);
+          }
         }
         requestAnimationFrame(tick);
       }
@@ -1066,20 +1078,28 @@
       function start() {
         if (running || reduceMotion.matches) return;
         running = true;
+        prev = 0;
         requestAnimationFrame(tick);
       }
 
       resize();
-      draw(performance.now() / 1000);
+      draw(clock);
       bg.classList.add("is-live");
       start();
 
       reduceMotion.addEventListener("change", start);
       addEventListener("resize", () => {
         resize();
-        draw(performance.now() / 1000);
+        draw(clock);
       });
     })();
+
+    // Phones open the mail app with the address filled in; desktops get Gmail's compose window.
+    if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
+      const email = document.getElementById("email-btn");
+      email.href = "mailto:reshu70173@gmail.com?subject=DMs%20Only";
+      email.removeAttribute("target");
+    }
   </script>
 </body>
 </html>
