@@ -721,6 +721,18 @@
       text-decoration: none;
     }
 
+    .link-button {
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--link);
+      font: inherit;
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 0.15em;
+      cursor: pointer;
+    }
+
     .text-link:hover {
       text-decoration: underline;
     }
@@ -993,6 +1005,84 @@
       min-height: 2.75rem;
     }
 
+    .dialog-text {
+      margin: 0 0 1.25rem;
+      color: var(--muted);
+      font-size: 0.9375rem;
+    }
+
+    .field-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 650;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .tester-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .tester-row input {
+      flex: 1;
+      min-width: 0;
+      min-height: 3rem;
+      padding: 0.75rem 0.875rem;
+      border: 1px solid rgba(234, 241, 255, 0.18);
+      border-radius: 12px;
+      background: rgba(5, 11, 26, 0.6);
+      color: var(--text);
+      font: inherit;
+      font-size: 1rem;
+    }
+
+    .tester-row input:focus {
+      border-color: var(--accent-text);
+    }
+
+    .tester-row .btn {
+      flex: none;
+    }
+
+    .form-status {
+      min-height: 1.25rem;
+      margin: 0.5rem 0 0;
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+
+    .form-status.error {
+      color: #ff9b9b;
+    }
+
+    .dialog-note {
+      margin: 0.75rem 0 0;
+      color: var(--muted);
+      font-size: 0.8125rem;
+    }
+
+    .dialog-done .btn {
+      width: 100%;
+    }
+
+    /* Bots fill every field; people never see this one. */
+    .hp {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+
+    @media (max-width: 480px) {
+      .tester-row {
+        flex-direction: column;
+      }
+    }
+
     @keyframes dialog-in {
       from {
         opacity: 0;
@@ -1243,7 +1333,7 @@
                 <svg aria-hidden="true"><use href="#play"/></svg>
                 <span><small>Coming soon to</small><strong>Google Play</strong></span>
               </div>
-              <a class="btn btn-ghost" href="#how">See how it works</a>
+              <button class="btn js-tester" type="button">Become a tester<svg class="arrow" aria-hidden="true"><use href="#arrow-right"/></svg></button>
             </div>
             <p class="note">Free. No extra account needed.</p>
           </div>
@@ -1407,6 +1497,10 @@
               <p>Yes, if you turn on unread alerts in Settings. DMs Only checks about every 15 minutes and tells you how many conversations are unread.</p>
             </details>
             <details>
+              <summary>Can I try it before it launches?</summary>
+              <p>Yes. <button class="link-button js-tester" type="button">Become a tester</button> with the Google account email you use on the Play Store, and we'll send you a link to install the test version.</p>
+            </details>
+            <details>
               <summary>Is there an iPhone version?</summary>
               <p>Not right now. DMs Only is an Android app.</p>
             </details>
@@ -1458,6 +1552,7 @@
             <svg aria-hidden="true"><use href="#play"/></svg>
             <span><small>Coming soon to</small><strong>Google Play</strong></span>
           </div>
+          <p>Want it sooner? <button class="link-button js-tester" type="button">Become a tester</button> and try it before launch.</p>
         </div>
       </section>
     </main>
@@ -1499,6 +1594,29 @@
       </div>
     </footer>
   </div>
+
+  <dialog class="email-dialog" id="tester-dialog" aria-labelledby="tester-title">
+    <button class="dialog-close" type="button" aria-label="Close">×</button>
+    <div id="tester-start">
+      <h3 id="tester-title">Test DMs Only early</h3>
+      <p class="dialog-text">Enter the Google account email you use on the Play Store. We'll add you to the test and email you the link to install it.</p>
+      <form id="tester-form" novalidate>
+        <label class="field-label" for="tester-email">Google account email</label>
+        <div class="tester-row">
+          <input id="tester-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@gmail.com" required>
+          <button class="btn" type="submit">Join the test</button>
+        </div>
+        <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <p class="form-status" id="tester-status" role="status" aria-live="polite"></p>
+      </form>
+      <p class="dialog-note">We only use this email to invite you to test DMs Only. <a href="privacy/">Privacy policy</a></p>
+    </div>
+    <div class="dialog-done" id="tester-done" hidden>
+      <h3>You're on the list</h3>
+      <p class="dialog-text">We'll email the Play Store test link to <strong id="tester-done-email"></strong> soon.</p>
+      <button class="btn" type="button" id="tester-close">Done</button>
+    </div>
+  </dialog>
 
   <dialog class="email-dialog" id="email-dialog" aria-labelledby="email-title">
     <button class="dialog-close" type="button" aria-label="Close">×</button>
@@ -1765,6 +1883,81 @@
         const topic = form.elements.topic.value;
         const text = form.elements.message.value.trim();
         openChooser(`DMs Only: ${topic}`, name ? `${text}\n\nFrom: ${name}` : text);
+      });
+    })();
+
+    (() => {
+      // From the Google Form's pre-filled link: .../forms/d/e/<FORM_ID>/viewform?...&entry.<NUMBER>=...
+      const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScgSfN25VYgyDWx9qL894Soez3I2hx6gTp8X32JyJvF_CEKnA/formResponse";
+      const EMAIL_FIELD = "entry.1334117426";
+      // The form also has Google's built-in Email field ("Collect email addresses: Responder input"), sent as emailAddress.
+      const dialog = document.getElementById("tester-dialog");
+      const form = document.getElementById("tester-form");
+      const input = document.getElementById("tester-email");
+      const status = document.getElementById("tester-status");
+      const submit = form.querySelector('button[type="submit"]');
+      const start = document.getElementById("tester-start");
+      const done = document.getElementById("tester-done");
+
+      function show(message, isError) {
+        status.textContent = message;
+        status.classList.toggle("error", isError);
+      }
+
+      function open() {
+        start.hidden = false;
+        done.hidden = true;
+        show("", false);
+        if (typeof dialog.showModal !== "function") return;
+        dialog.showModal();
+        input.focus();
+      }
+
+      function finish(email) {
+        document.getElementById("tester-done-email").textContent = email;
+        start.hidden = true;
+        done.hidden = false;
+        document.getElementById("tester-close").focus();
+      }
+
+      for (const trigger of document.querySelectorAll(".js-tester")) trigger.addEventListener("click", open);
+      dialog.querySelector(".dialog-close").addEventListener("click", () => dialog.close());
+      document.getElementById("tester-close").addEventListener("click", () => dialog.close());
+      dialog.addEventListener("click", (event) => {
+        const box = dialog.getBoundingClientRect();
+        const inside = event.clientX >= box.left && event.clientX <= box.right &&
+          event.clientY >= box.top && event.clientY <= box.bottom;
+        if (!inside) dialog.close();
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const email = input.value.trim();
+        if (!input.checkValidity() || !email) {
+          show("Enter a valid email address.", true);
+          input.focus();
+          return;
+        }
+        if (form.elements.website.value) {
+          finish(email);
+          return;
+        }
+        if (!FORM_URL || !EMAIL_FIELD) {
+          show("Sign-ups open soon. Please check back later.", true);
+          return;
+        }
+        submit.disabled = true;
+        show("Sending…", false);
+        try {
+          // Google Forms doesn't allow reading the reply from another site, so a sent request counts as success.
+          await fetch(FORM_URL, { method: "POST", mode: "no-cors", body: new URLSearchParams({ emailAddress: email, [EMAIL_FIELD]: email }) });
+          form.reset();
+          finish(email);
+        } catch {
+          show("Couldn't send. Check your connection and try again.", true);
+        } finally {
+          submit.disabled = false;
+        }
       });
     })();
   </script>
