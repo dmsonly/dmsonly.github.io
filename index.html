@@ -528,10 +528,14 @@
     }
 
     .hero-phones {
+      --px: 0;
+      --py: 0;
+      --lift: 0;
       position: relative;
       width: min(27rem, 90vw);
       aspect-ratio: 2 / 3;
       margin: 0 auto;
+      transform: perspective(1400px) rotateX(calc(var(--py) * -5deg)) rotateY(calc(var(--px) * 7deg)) scale(calc(1 + var(--lift) * 0.02));
     }
 
     .hero-phones::before {
@@ -551,13 +555,13 @@
       top: 7%;
       left: 0;
       filter: brightness(0.55) saturate(0.9);
-      transform: rotate(-7deg);
+      transform: translate3d(calc(var(--px) * -10px), calc(var(--py) * -8px), 0) rotate(-7deg);
     }
 
     .hero-phones .front {
       top: 0;
       right: 0;
-      transform: rotate(5deg);
+      transform: translate3d(calc(var(--px) * 16px), calc(var(--py) * 12px), 0) rotate(5deg);
     }
 
     .scroll-hint {
@@ -844,7 +848,18 @@
     }
 
     .faq details {
+      overflow: hidden;
       border-radius: 18px;
+      transition: border-color 0.3s ease, background-color 0.3s ease;
+    }
+
+    .faq details:hover {
+      border-color: rgba(143, 192, 255, 0.28);
+    }
+
+    .faq details[open]:not(.is-closing) {
+      border-color: rgba(143, 192, 255, 0.35);
+      background: rgba(14, 29, 62, 0.8);
     }
 
     .faq summary {
@@ -857,6 +872,7 @@
       font-weight: 600;
       list-style: none;
       cursor: pointer;
+      outline-offset: -3px;
     }
 
     .faq summary::-webkit-details-marker {
@@ -865,14 +881,28 @@
 
     .faq summary::after {
       content: "+";
+      display: grid;
+      flex: none;
+      place-items: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 50%;
+      background: var(--accent-soft);
       color: var(--accent-text);
-      font-size: 1.5rem;
+      font-size: 1.25rem;
+      font-weight: 500;
       line-height: 1;
-      transition: transform 0.25s var(--ease-out);
+      transition: transform 0.35s var(--ease-out), background-color 0.3s ease, color 0.3s ease;
     }
 
-    .faq details[open] summary::after {
+    .faq summary:hover::after {
+      background: rgba(11, 114, 231, 0.32);
+    }
+
+    .faq details[open]:not(.is-closing) summary::after {
       transform: rotate(45deg);
+      background: var(--accent);
+      color: #fff;
     }
 
     .faq details p {
@@ -898,12 +928,6 @@
       color: var(--muted);
     }
 
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-
     .field {
       display: flex;
       flex-direction: column;
@@ -920,7 +944,6 @@
     }
 
     .field input,
-    .field select,
     .field textarea {
       width: 100%;
       min-height: 3rem;
@@ -931,10 +954,6 @@
       color: var(--text);
       font: inherit;
       font-size: 1rem;
-    }
-
-    .field select {
-      cursor: pointer;
     }
 
     .field textarea {
@@ -948,9 +967,67 @@
     }
 
     .field input:focus,
-    .field select:focus,
     .field textarea:focus {
       border-color: var(--accent-text);
+    }
+
+    .topics {
+      min-width: 0;
+      margin: 0 0 1.25rem;
+      padding: 0;
+      border: 0;
+    }
+
+    .topics legend {
+      margin-bottom: 0.5rem;
+      padding: 0;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 650;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .chip input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .chip span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 2.375rem;
+      padding: 0 0.75rem;
+      border: 1px solid rgba(234, 241, 255, 0.16);
+      border-radius: 999px;
+      background: rgba(5, 11, 26, 0.5);
+      color: var(--muted);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .chip:hover span {
+      border-color: rgba(143, 192, 255, 0.4);
+      color: var(--text);
+    }
+
+    .chip input:checked + span {
+      border-color: var(--accent-text);
+      background: var(--accent-soft);
+      color: #fff;
+    }
+
+    .chip input:focus-visible + span {
+      outline: 2px solid var(--accent-text);
+      outline-offset: 2px;
     }
 
     .panel .btn {
@@ -964,21 +1041,21 @@
       text-align: center;
     }
 
-    /* Dialogs: light cards over the dark page; on phones they become bottom sheets. */
+    /* Dialogs: dark glass cards; on phones they become bottom sheets. */
     .email-dialog {
-      --text: #0f172a;
-      --muted: #5b6475;
-      --border: #dfe5ee;
-      --link: #0b63d6;
+      --muted: #a3b3d1;
+      --border: rgba(234, 241, 255, 0.12);
       width: min(26rem, calc(100% - 2rem));
       max-height: calc(100dvh - 2rem);
       padding: 1.75rem;
       overflow: auto;
-      border: 0;
+      border: 1px solid rgba(143, 192, 255, 0.18);
       border-radius: 24px;
-      background: #eef2f8;
+      background:
+        radial-gradient(120% 70% at 0% 0%, rgba(59, 130, 246, 0.2), transparent 60%),
+        linear-gradient(180deg, #12224a, #0b1530);
       color: var(--text);
-      box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.07);
     }
 
     .email-dialog[open] {
@@ -986,9 +1063,9 @@
     }
 
     .email-dialog::backdrop {
-      background: rgba(3, 8, 20, 0.6);
-      -webkit-backdrop-filter: blur(6px);
-      backdrop-filter: blur(6px);
+      background: rgba(3, 8, 20, 0.65);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
     }
 
     .email-dialog h3 {
@@ -1012,7 +1089,7 @@
     }
 
     .email-dialog .btn-ghost:hover {
-      background: #f1f4f8;
+      background: rgba(234, 241, 255, 0.06);
     }
 
     .dialog-close {
@@ -1025,10 +1102,10 @@
       height: 2.25rem;
       border: 0;
       border-radius: 50%;
-      background: #dfe6f0;
-      color: var(--text);
+      background: rgba(234, 241, 255, 0.07);
+      color: var(--muted);
       cursor: pointer;
-      transition: background-color 0.2s ease;
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
     .dialog-close svg {
@@ -1037,7 +1114,8 @@
     }
 
     .dialog-close:hover {
-      background: #d2dbe7;
+      background: rgba(234, 241, 255, 0.13);
+      color: var(--text);
     }
 
     .address {
@@ -1049,7 +1127,7 @@
       padding: 0.5rem 0.5rem 0.5rem 1rem;
       border: 1px solid var(--border);
       border-radius: 14px;
-      background: #fff;
+      background: rgba(5, 11, 26, 0.55);
       font-weight: 600;
       overflow-wrap: anywhere;
     }
@@ -1060,7 +1138,7 @@
       padding: 0 0.875rem;
       border: 1px solid var(--border);
       border-radius: 999px;
-      background: #fff;
+      background: transparent;
       color: var(--text);
       font: inherit;
       font-size: 0.8125rem;
@@ -1069,7 +1147,7 @@
     }
 
     .copy-btn:hover {
-      background: #f1f4f8;
+      background: rgba(234, 241, 255, 0.06);
     }
 
     .dialog-actions {
@@ -1102,9 +1180,9 @@
       min-width: 0;
       min-height: 2.625rem;
       padding: 0 0.875rem;
-      border: 1.5px solid #cfd8e3;
+      border: 1.5px solid rgba(234, 241, 255, 0.16);
       border-radius: 12px;
-      background: #fff;
+      background: rgba(5, 11, 26, 0.6);
       color: var(--text);
       font: inherit;
       font-size: 0.9375rem;
@@ -1112,13 +1190,13 @@
     }
 
     .tester-row input::placeholder {
-      color: #94a0b2;
+      color: #6f81a3;
     }
 
     .tester-row input:focus {
       outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18);
+      border-color: #5b9cff;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25);
     }
 
     .tester-row .btn {
@@ -1146,7 +1224,7 @@
     }
 
     .form-status.error {
-      color: #d14343;
+      color: #ff9b9b;
     }
 
     .dialog-note {
@@ -1163,8 +1241,8 @@
       height: 3.5rem;
       margin-bottom: 1.25rem;
       border-radius: 50%;
-      background: #e8f1ff;
-      color: var(--accent);
+      background: rgba(11, 114, 231, 0.2);
+      color: var(--accent-text);
     }
 
     .done-icon svg {
@@ -1367,13 +1445,8 @@
         display: none;
       }
 
-      .steps,
-      .row {
+      .steps {
         grid-template-columns: 1fr;
-      }
-
-      .row {
-        gap: 0;
       }
     }
 
@@ -1726,21 +1799,19 @@
             <p class="label">Contact</p>
             <h2>Questions, bugs or ideas?</h2>
             <p class="panel-intro">Send a question, report a problem or suggest a feature. This opens your email with your message ready to send.</p>
-            <div class="row">
-              <div class="field">
-                <label for="cf-name">Name</label>
-                <input id="cf-name" name="name" autocomplete="name" placeholder="Your name">
-              </div>
-              <div class="field">
-                <label for="cf-topic">Topic</label>
-                <select id="cf-topic" name="topic">
-                  <option>General question</option>
-                  <option>Report a problem</option>
-                  <option>Feature request</option>
-                  <option>Something else</option>
-                </select>
-              </div>
+            <div class="field">
+              <label for="cf-name">Name</label>
+              <input id="cf-name" name="name" autocomplete="name" placeholder="Your name">
             </div>
+            <fieldset class="topics">
+              <legend>Topic</legend>
+              <div class="chips">
+                <label class="chip"><input type="radio" name="topic" value="General question" checked><span>General question</span></label>
+                <label class="chip"><input type="radio" name="topic" value="Report a problem"><span>Report a problem</span></label>
+                <label class="chip"><input type="radio" name="topic" value="Feature request"><span>Feature request</span></label>
+                <label class="chip"><input type="radio" name="topic" value="Something else"><span>Something else</span></label>
+              </div>
+            </fieldset>
             <div class="field">
               <label for="cf-message">Message</label>
               <textarea id="cf-message" name="message" required placeholder="How can we help?"></textarea>
@@ -1992,6 +2063,79 @@
       addEventListener("resize", () => {
         if (resize()) draw(clock);
       });
+    })();
+
+    (() => {
+      // Phones lean toward the cursor; eased each frame and idle once settled.
+      const stage = document.querySelector(".hero-phones");
+      if (!stage || !matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+      const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+      const target = { x: 0, y: 0, lift: 0 };
+      const now = { x: 0, y: 0, lift: 0 };
+      let raf = 0;
+      const clamp = (v) => Math.max(-1, Math.min(1, v));
+
+      function frame() {
+        let moving = false;
+        for (const k of ["x", "y", "lift"]) {
+          now[k] += (target[k] - now[k]) * 0.12;
+          if (Math.abs(target[k] - now[k]) > 0.001) moving = true;
+          else now[k] = target[k];
+        }
+        stage.style.setProperty("--px", now.x.toFixed(4));
+        stage.style.setProperty("--py", now.y.toFixed(4));
+        stage.style.setProperty("--lift", now.lift.toFixed(4));
+        raf = moving ? requestAnimationFrame(frame) : 0;
+      }
+      const kick = () => { if (!raf && !reduce.matches) raf = requestAnimationFrame(frame); };
+
+      stage.addEventListener("pointermove", (e) => {
+        const r = stage.getBoundingClientRect();
+        target.x = clamp((e.clientX - r.left) / r.width * 2 - 1);
+        target.y = clamp((e.clientY - r.top) / r.height * 2 - 1);
+        target.lift = 1;
+        kick();
+      });
+      stage.addEventListener("pointerleave", () => {
+        target.x = target.y = target.lift = 0;
+        kick();
+      });
+    })();
+
+    (() => {
+      // FAQ answers slide open and closed instead of snapping.
+      const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+      const ease = "cubic-bezier(0.2, 0.65, 0.25, 1)";
+      for (const item of document.querySelectorAll(".faq details")) {
+        const summary = item.querySelector("summary");
+        const answer = item.querySelector("p");
+        let anim = null;
+        summary.addEventListener("click", (event) => {
+          if (reduce.matches || !item.animate) return;
+          event.preventDefault();
+          const start = item.offsetHeight;
+          const opening = !item.open || item.classList.contains("is-closing");
+          anim?.cancel();
+          let end;
+          if (opening) {
+            item.classList.remove("is-closing");
+            item.open = true;
+            end = item.offsetHeight;
+            answer.animate({ opacity: [0, 1], transform: ["translateY(-6px)", "none"] }, { duration: 300, easing: ease });
+          } else {
+            item.classList.add("is-closing");
+            end = summary.offsetHeight + (item.offsetHeight - item.clientHeight);
+          }
+          anim = item.animate({ height: [`${start}px`, `${end}px`] }, { duration: 320, easing: ease });
+          anim.onfinish = () => {
+            anim = null;
+            if (item.classList.contains("is-closing")) {
+              item.classList.remove("is-closing");
+              item.open = false;
+            }
+          };
+        });
+      }
     })();
 
     (() => {
