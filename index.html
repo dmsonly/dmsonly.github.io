@@ -1640,6 +1640,7 @@
               <li><svg aria-hidden="true"><use href="#check"/></svg><span>You sign in on Instagram's own page, inside the app.</span></li>
               <li><svg aria-hidden="true"><use href="#check"/></svg><span>DM's Only has no servers of its own, so your password and messages only ever go to Instagram.</span></li>
               <li><svg aria-hidden="true"><use href="#check"/></svg><span>No advertising or analytics SDKs, and nothing to buy.</span></li>
+              <li><svg aria-hidden="true"><use href="#check"/></svg><span>Optional app blocking only sees which app opened, never your screen.</span></li>
             </ul>
             <a class="text-link" href="privacy/">Read the privacy policy<svg class="arrow" aria-hidden="true"><use href="#arrow-right"/></svg></a>
           </div>
@@ -1685,7 +1686,7 @@
             </details>
             <details>
               <summary>Can DM's Only see my password or messages?</summary>
-              <p>No. You sign in on Instagram's own page inside the app. DM's Only doesn't run its own servers, so your password, messages and login never go anywhere except Instagram.</p>
+              <p>No. You sign in on Instagram's own login page, and DM's Only has no servers of its own, so your password and messages only go to Instagram.</p>
             </details>
             <details>
               <summary>Is it free?</summary>
@@ -1693,7 +1694,11 @@
             </details>
             <details>
               <summary>Can I still use the regular Instagram app?</summary>
-              <p>Yes. Locking the Instagram app is optional. If you turn it on, DM's Only uses Android's Accessibility service only to notice when Instagram opens, and you get two 5 minute passes a day to use it.</p>
+              <p>Yes. Locking the Instagram app is optional. If you turn it on, you still get two 5 minute passes a day.</p>
+            </details>
+            <details>
+              <summary>Why does it ask for Accessibility access?</summary>
+              <p>Only if you turn on Instagram blocking. It lets DM's Only notice when Instagram opens, and it can't read your screen, messages or typing.</p>
             </details>
             <details>
               <summary>Will I still get notified about new messages?</summary>
@@ -1701,7 +1706,7 @@
             </details>
             <details>
               <summary>Can I try it before it launches?</summary>
-              <p>Yes. <button class="link-button js-tester" type="button">Become a tester</button> with the Google account email you use on the Play Store, and we'll send you a link to install the test version.</p>
+              <p>Yes. <button class="link-button js-tester" type="button">Become a tester</button> and we'll email you a Google Play link. You install the test version from the Play Store, like any other app.</p>
             </details>
             <details>
               <summary>Is there an iPhone version?</summary>
@@ -1709,7 +1714,7 @@
             </details>
             <details>
               <summary>How do I remove my data?</summary>
-              <p>Go to Android Settings → Apps → DM's Only → Storage → Clear storage. This signs you out and resets the app. Your Instagram account and messages aren't affected. The <a href="privacy/">privacy policy</a> has the details.</p>
+              <p>Go to Android Settings → Apps → DM's Only → Storage → Clear storage. This signs you out and resets the app (uninstalling does the same). Your Instagram account and messages aren't affected. The <a href="privacy/">privacy policy</a> has the details.</p>
             </details>
           </div>
         </div>
@@ -1817,7 +1822,7 @@
     <div class="dialog-done" id="tester-done" hidden>
       <div class="done-icon"><svg aria-hidden="true"><use href="#check"/></svg></div>
       <h3>You're in</h3>
-      <p class="dialog-text">We'll send the test link to <strong id="tester-done-email"></strong>.</p>
+      <p class="dialog-text">We'll send the Google Play test link to <strong id="tester-done-email"></strong>.</p>
       <button class="btn" type="button" id="tester-close">Done</button>
     </div>
   </dialog>
