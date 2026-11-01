@@ -1882,7 +1882,7 @@
       <form id="tester-form" novalidate>
         <label class="field-label" for="tester-email">Email address</label>
         <div class="tester-row">
-          <input id="tester-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@gmail.com" required>
+          <input id="tester-email" name="email" type="email" pattern="[^@\s]+@[^@\s]+\.[A-Za-z]{2,}" autocomplete="email" inputmode="email" placeholder="you@gmail.com" required>
           <button class="btn" type="submit">Join</button>
         </div>
         <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
