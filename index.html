@@ -2254,10 +2254,54 @@
       const submit = form.querySelector('button[type="submit"]');
       const start = document.getElementById("tester-start");
       const done = document.getElementById("tester-done");
+      const DOMAINS = [
+        "gmail.com", "googlemail.com", "yahoo.com", "yahoo.in", "yahoo.co.in", "ymail.com", "rocketmail.com",
+        "outlook.com", "outlook.in", "hotmail.com", "live.com", "msn.com", "icloud.com", "me.com", "mac.com",
+        "aol.com", "proton.me", "protonmail.com", "rediffmail.com", "mail.com", "gmx.com", "zoho.com",
+      ];
+      let warned = "";
 
       function show(message, isError) {
         status.textContent = message;
         status.classList.toggle("error", isError);
+      }
+
+      // Edit distance where swapping two neighbouring letters counts as one edit.
+      function distance(a, b) {
+        const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+        for (let j = 1; j <= b.length; j++) d[0][j] = j;
+        for (let i = 1; i <= a.length; i++) {
+          for (let j = 1; j <= b.length; j++) {
+            d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+            if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+              d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+            }
+          }
+        }
+        return d[a.length][b.length];
+      }
+
+      // "you@gmail.cm" → "you@gmail.com"
+      function suggestion(email) {
+        const at = email.lastIndexOf("@");
+        const domain = email.slice(at + 1).toLowerCase();
+        if (DOMAINS.includes(domain)) return "";
+        const match = DOMAINS.find((known) => distance(domain, known) === 1);
+        return match ? email.slice(0, at + 1) + match : "";
+      }
+
+      function offer(fix) {
+        const use = document.createElement("button");
+        use.type = "button";
+        use.className = "link-button";
+        use.textContent = fix;
+        use.addEventListener("click", () => {
+          input.value = fix;
+          show("", false);
+          submit.focus();
+        });
+        status.classList.add("error");
+        status.replaceChildren("Did you mean ", use, "?");
       }
 
       function open() {
@@ -2292,6 +2336,13 @@
         if (!input.checkValidity() || !email) {
           show("Enter a valid email address.", true);
           input.focus();
+          return;
+        }
+        // Warn once; submitting the same email again keeps it, in case it's a real lookalike domain.
+        const fix = suggestion(email);
+        if (fix && email !== warned) {
+          warned = email;
+          offer(fix);
           return;
         }
         if (form.elements.website.value) {
